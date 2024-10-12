@@ -1,7 +1,7 @@
 all:test
 
 test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o ../src/main.o
-	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitTool.o ../src/Configuration.o -o test
+	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o -o test
 ../src/main.o:../src/main.cc
 	g++ -c -g ../src/main.cc -o ../src/main.o -I ../include
 ../src/Configuration.o:../src/Configuration.cc ../include/Configuration.h

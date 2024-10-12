@@ -24,14 +24,14 @@ class Configuration;
 class DictProducer
 {
 public:
-    DictProducer(Configuration* , SplitEn*);
-    DictProducer(Configuration* , SplitZh*);
+    DictProducer(Configuration* , SplitEn* , SplitZh*);
     ~DictProducer();
 
     void buildEnDict();
     void buildCnDict();
-    void createIndex();
+    void buildIndex();
     void store();
+    size_t getByteNum_UTF8(const char byte);
 
     //调试函数
     void showFile();
@@ -40,7 +40,8 @@ private:
     vector<string> _file;
     vector<pair<string,int>> _dict;
     map<string,set<int>> _index;
-    SplitTool* _cuttor;
+    SplitEn* _cuttorEn;
+    SplitZh* _cuttorZh;
     Configuration* _pConf;
 
 };

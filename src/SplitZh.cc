@@ -1,5 +1,6 @@
 #include "SplitZh.h"
 #include "Configuration.h"
+#include "cppjieba/Jieba.hpp"
 
 
 SplitZh::SplitZh()
@@ -49,22 +50,30 @@ vector<string> SplitZh::cut(Configuration* conf)
     {
         // std::cout<<dirPath<<"\n";
         ifstream ifs(dirPath);
-        string line,word;
+        string line;
+        vector<string> words;
         //按行读取文件内容
         while(getline(ifs,line))
         {
-            
-            
-            
-            
-            
-            
-            
-            
+           _jieba->Cut(line,words,true); 
+           for(auto& word:words)
+           {
+                if(!word.empty() && word!=" " && !StopWord.count(word))
+                {
+                    srcDict.push_back(word);
+                }
+           }
             
         }
         ifs.close();
     }
+    
     //所有单词分割完毕，返回一份拷贝
     return srcDict;
+}
+
+
+cppjieba::Jieba* SplitZh::getJieba()
+{
+    return _jieba;
 }

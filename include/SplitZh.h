@@ -17,6 +17,7 @@ public:
     SplitZh(); 
     virtual ~SplitZh();
     virtual vector<string> cut(Configuration*);
+    cppjieba::Jieba* getJieba();
 private:
     cppjieba::Jieba* _jieba;
     
