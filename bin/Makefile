@@ -1,7 +1,7 @@
 all:test
 
-test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o ../src/main.o
-	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o -o test
+test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o ../src/main.o
+	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o test
 ../src/main.o:../src/main.cc
 	g++ -c -g ../src/main.cc -o ../src/main.o -I ../include
 ../src/Configuration.o:../src/Configuration.cc ../include/Configuration.h
@@ -14,3 +14,7 @@ test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o 
 	g++ -c -g ../src/SplitEn.cc -o ../src/SplitEn.o -I ../include
 ../src/SplitTool.o:../src/SplitTool.cc ../include/SplitTool.h
 	g++ -c -g ../src/SplitTool.cc -o ../src/SplitTool.o -I ../include
+../src/tinyxml2.o:../src/tinyxml2.cpp ../include/tinyxml2.h
+	g++ -c -g ../src/tinyxml2.cpp -o ../src/tinyxml2.o -I ../include
+../src/Rss.o:../src/Rss.cc ../include/Rss.hh
+	g++ -c -g ../src/Rss.cc -o ../src/Rss.o -I ../include
