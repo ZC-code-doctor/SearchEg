@@ -12,17 +12,17 @@ using std::unordered_set;
 using std::istringstream;
 using std::ifstream;
 
+class Configuration;
+
 class SplitEn
 :public SplitTool
 {
 public:
     SplitEn();
     ~SplitEn();
-    virtual vector<string> cut(const string& path) override;
-
+    virtual vector<string> cut(Configuration*) override;
 
 private:
-    unordered_set<string> load_StopWord(const string&);
     void clean(string& word);
 
 private:

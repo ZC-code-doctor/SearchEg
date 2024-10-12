@@ -17,11 +17,15 @@ using std::string;
 using std::pair;
 
 class SplitTool;
+class SplitEn;
+class SplitZh;
+class Configuration;
 
 class DictProducer
 {
 public:
-    DictProducer(const string&,SplitTool*);
+    DictProducer(Configuration* , SplitEn*);
+    DictProducer(Configuration* , SplitZh*);
     ~DictProducer();
 
     void buildEnDict();
@@ -37,7 +41,7 @@ private:
     vector<pair<string,int>> _dict;
     map<string,set<int>> _index;
     SplitTool* _cuttor;
-    string _conf;
+    Configuration* _pConf;
 
 };
 

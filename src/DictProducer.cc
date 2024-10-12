@@ -1,17 +1,18 @@
 #include "DictProducer.h"
 #include "SplitTool.h"
+#include "SplitEn.h"
+#include "Configuration.h"
 
 #include <dirent.h>
 #include <cstring>
 
-DictProducer::DictProducer(const string& conf, SplitTool* tool)
-:_cuttor(tool)
-,_conf(conf)
+DictProducer::DictProducer(Configuration* pConf, SplitEn* EnTool)
+:_cuttor(EnTool)
+,_pConf(pConf)
 {
     buildEnDict();
     createIndex();
     store();
-
 }
 
 //析构函数
@@ -26,7 +27,7 @@ void DictProducer::buildEnDict()
     //创建一个哈希map来记录所有原始语料的词频
     unordered_map<string,int> Temp;
     Temp.reserve(5000);
-    vector<string> Src = _cuttor->cut(_conf);
+    vector<string> Src = _cuttor->cut(_pConf);
     for(auto&words:Src)
     {
         Temp[words]+=1;
