@@ -6,7 +6,9 @@
 
 #include <fstream>
 #include <sstream>
+#include <unordered_set>
 
+using std::unordered_set;
 using std::istringstream;
 using std::ifstream;
 
@@ -18,7 +20,9 @@ public:
     ~SplitEn();
     virtual vector<string> cut(const string& path) override;
 
+
 private:
+    unordered_set<string> load_StopWord(const string&);
     void clean(string& word);
 
 private:

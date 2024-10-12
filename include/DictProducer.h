@@ -5,7 +5,11 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <fstream>
+#include <unordered_map>
 
+using std::ofstream;
+using std::unordered_map;
 using std::map;
 using std::set;
 using std::vector;
@@ -33,6 +37,7 @@ private:
     vector<pair<string,int>> _dict;
     map<string,set<int>> _index;
     SplitTool* _cuttor;
+    string _conf;
 
 };
 

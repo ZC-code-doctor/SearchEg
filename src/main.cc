@@ -8,10 +8,7 @@
 int main()
 {
     SplitEn dict;
-    DictProducer temp("../yuliao/en_yuliao/",&dict);
-    temp.showFile();
-
-
+    DictProducer temp("../conf/Myconf.conf",&dict);
     return 0;
 }
 
