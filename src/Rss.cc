@@ -20,9 +20,18 @@ void RssReader::parseRss(const string &filename) {
         return;
     }
 
+    RssItem rssItem;
+
+    XMLElement *imageElement = channel->FirstChildElement("image");
+    if (imageElement) {
+    XMLElement *urlElement = imageElement->FirstChildElement("url");
+    if (urlElement && urlElement->GetText()) {
+        rssItem.url = urlElement->GetText();
+    }
+    }
+
     XMLElement *item = channel->FirstChildElement("item");
     while (item) {
-        RssItem rssItem;
 
         XMLElement *titleElement = item->FirstChildElement("title");
         if (titleElement && titleElement->GetText()) {
@@ -36,14 +45,16 @@ void RssReader::parseRss(const string &filename) {
 
         XMLElement *descElement = item->FirstChildElement("description");
         if (descElement && descElement->GetText()) {
-            rssItem.description = descElement->GetText();
+            string description = descElement->GetText();
+            std::regex htmlTags("<[^>]+>|&[^;]+;");
+            rssItem.description = regex_replace(description, htmlTags, "");
         }
 
         XMLElement *contentElement = item->FirstChildElement("content:encoded");
         if (contentElement && contentElement->GetText()) {
             // 使用正则表达式去除 HTML 标签
-            string content = contentElement->GetText();
-            regex htmlTags("<[^>]*>");
+            string content = contentElement->GetText(); 
+            std::regex htmlTags("<[^>]+>|&[^;]+;");
             rssItem.content = regex_replace(content, htmlTags, "");
         }
 
@@ -54,22 +65,34 @@ void RssReader::parseRss(const string &filename) {
 
 
 //导出数据到指定文件
-void RssReader::dump(const string &filename) {
-    ofstream ofs(filename);
-    if (!ofs) {
-        cerr << "Error opening output file: " << filename << endl;
-        return;
-    }
+string RssReader::dump() {
 
-    int docid = 1;
+    static int docid = 0;
+    ++docid;
+
+    string res;
     for (const auto &rssItem : _rss) {
-        ofs << "<doc>" << endl;
-        ofs << "\t<docid>" << docid++ << "</docid>" << endl;
-        ofs << "\t<title>" << rssItem.title << "</title>" << endl;
-        ofs << "\t<link>" << rssItem.link << "</link>" << endl;
-        ofs << "\t<description>" << rssItem.description << "</description>" << endl;
-        ofs << "\t<content>" << rssItem.content << "</content>" << endl;
-        ofs << "</doc>" << endl;
+
+        res = "<doc><docid>" + to_string(docid) + "</docid><url>" + rssItem.url + "</url><title>" + rssItem.title;
+        if(!rssItem.content.empty())
+        {
+            res += "</title><content>" + rssItem.content + "</content></doc>";
+        }
+        else if(!rssItem.description.empty())
+        {
+            res += "</title><description>" + rssItem.description + "</description></doc>";
+        }
+        else if(rssItem.content.empty()&&rssItem.description.empty())
+        {
+            --docid;
+            return string("") ;
+        }
     }
+    return res;
+}
+
+vector<RssItem> RssReader::getItem()
+{
+    return _rss;
 }
 

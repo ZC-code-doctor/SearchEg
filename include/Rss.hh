@@ -13,13 +13,15 @@ struct RssItem {
     string link;
     string description;
     string content;
+    string url;
 };
 
 class RssReader {
 public:
     RssReader() = default;
     void parseRss(const string &filename);  // 解析RSS文件
-    void dump(const string &filename);      // 输出到文件
+    string dump();      // 输出到文件
+    vector<RssItem> getItem();
 
 private:
     vector<RssItem> _rss;

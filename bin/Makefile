@@ -1,26 +1,52 @@
-all:test CleanXML
+all:demo
 
-CleanXML:../src/XMLdemo.o ../src/tinyxml2.o ../src/Rss.o
-	g++ ../src/XMLdemo.o ../src/tinyxml2.o ../src/Rss.o -o CleanXML
-../src/XMLdemo.o:../src/XMLdemo.cc
-	g++ -c -g ../src/XMLdemo.cc -o ../src/XMLdemo.o -I ../include
+demo:../src/demo.o ../src/WebPage.o  ../src/tinyxml2.o ../src/Rss.o ../src/PageLibPreprocessor.o ../src/Configuration.o
+	g++ ../src/demo.o ../src/PageLibPreprocessor.o ../src/WebPage.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o demo
+../src/demo.o:../src/demo.cc
+	g++ -c -g ../src/demo.cc -o ../src/demo.o -I ../include
 
-test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o \
-	 ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o ../src/main.o
-	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o test
-../src/main.o:../src/main.cc
-	g++ -c -g ../src/main.cc -o ../src/main.o -I ../include
-../src/Configuration.o:../src/Configuration.cc ../include/Configuration.h
-	g++ -c -g ../src/Configuration.cc -o ../src/Configuration.o -I ../include
-../src/DictProducer.o:../src/DictProducer.cc ../include/DictProducer.h
-	g++ -c -g ../src/DictProducer.cc -o ../src/DictProducer.o -I ../include
-../src/SplitZh.o:../src/SplitZh.cc ../include/SplitZh.h
-	g++ -c -g ../src/SplitZh.cc -o ../src/SplitZh.o -I ../include
-../src/SplitEn.o:../src/SplitEn.cc ../include/SplitEn.h
-	g++ -c -g ../src/SplitEn.cc -o ../src/SplitEn.o -I ../include
-../src/SplitTool.o:../src/SplitTool.cc ../include/SplitTool.h
-	g++ -c -g ../src/SplitTool.cc -o ../src/SplitTool.o -I ../include
+# CleanXML:../src/DirScanner.o ../src/FileProcessor.o ../src/tinyxml2.o ../src/Rss.o
+# 	g++ ../src/XMLdemo.o ../src/FileProcessor.o ../src/tinyxml2.o ../src/Rss.o -o CleanXML
+
+# 网页处理相关函数
+../src/PageLibPreprocessor.o:../src/PageLibPreprocessor.cc ../include/PageLibPreprocessor.h
+	g++ -c -g ../src/PageLibPreprocessor.cc -o ../src/PageLibPreprocessor.o -I ../include
+
+../src/DirScanner.o:../src/DirScanner.cc ../include/DirScanner.h
+	g++ -c -g ../src/DirScanner.cc -o ../src/DirScanner.o -I ../include
+
+../src/FileProcessor.o:../src/FileProcessor.cc ../include/FileProcessor.h
+	g++ -c -g ../src/FileProcessor.cc -o ../src/FileProcessor.o -I ../include
+
+../src/WebPage.o:../src/WebPage.cc ../include/WebPage.h
+	g++ -c -g ../src/WebPage.cc -o ../src/WebPage.o -I ../include
+
 ../src/tinyxml2.o:../src/tinyxml2.cpp ../include/tinyxml2.h
 	g++ -c -g ../src/tinyxml2.cpp -o ../src/tinyxml2.o -I ../include
+
 ../src/Rss.o:../src/Rss.cc ../include/Rss.hh
 	g++ -c -g ../src/Rss.cc -o ../src/Rss.o -I ../include
+
+# test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o  ../src/main.o
+# 	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o -o test
+
+../src/main.o:../src/main.cc
+	g++ -c -g ../src/main.cc -o ../src/main.o -I ../include
+
+#配置文件类
+../src/Configuration.o:../src/Configuration.cc ../include/Configuration.h
+	g++ -c -g ../src/Configuration.cc -o ../src/Configuration.o -I ../include
+
+# 词库处理函数 
+../src/DictProducer.o:../src/DictProducer.cc ../include/DictProducer.h
+	g++ -c -g ../src/DictProducer.cc -o ../src/DictProducer.o -I ../include
+
+../src/SplitZh.o:../src/SplitZh.cc ../include/SplitZh.h
+	g++ -c -g ../src/SplitZh.cc -o ../src/SplitZh.o -I ../include
+
+../src/SplitEn.o:../src/SplitEn.cc ../include/SplitEn.h
+	g++ -c -g ../src/SplitEn.cc -o ../src/SplitEn.o -I ../include
+
+../src/SplitTool.o:../src/SplitTool.cc ../include/SplitTool.h
+	g++ -c -g ../src/SplitTool.cc -o ../src/SplitTool.o -I ../include
+
