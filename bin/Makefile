@@ -1,6 +1,12 @@
-all:test
+all:test CleanXML
 
-test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o ../src/main.o
+CleanXML:../src/XMLdemo.o ../src/tinyxml2.o ../src/Rss.o
+	g++ ../src/XMLdemo.o ../src/tinyxml2.o ../src/Rss.o -o CleanXML
+../src/XMLdemo.o:../src/XMLdemo.cc
+	g++ -c -g ../src/XMLdemo.cc -o ../src/XMLdemo.o -I ../include
+
+test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o \
+	 ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o ../src/main.o
 	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o test
 ../src/main.o:../src/main.cc
 	g++ -c -g ../src/main.cc -o ../src/main.o -I ../include

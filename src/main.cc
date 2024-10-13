@@ -15,7 +15,6 @@ int main()
         SplitEn en;
         SplitZh zh;
         DictProducer temp(pConf,&en,&zh);
-
     }
 
     std::cout<<"whosyourdaddy"<<"\n";
