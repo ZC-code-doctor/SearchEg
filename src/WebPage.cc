@@ -30,3 +30,7 @@ string WebPage::getDoc()
 {
     return _doc;
 }
+string WebPage::content()
+{
+    return _docContent;
+}

@@ -15,6 +15,7 @@ public:
     ~WebPage();
     int getDocId();
     string getDoc();
+    string content();
 private:
     string _doc;
     int _docid;

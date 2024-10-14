@@ -2,12 +2,17 @@
 #include "WebPage.h"
 #include "Configuration.h"
 #include "Rss.hh"
+#include <fstream>
 
+using std::ofstream;
 
 PageLibPreprocessor::PageLibPreprocessor(Configuration *pConf)
 {
     // 初始化网页库对象
     initPageLib(pConf);
+
+    //保存数据处理结果
+    store();
 }
 PageLibPreprocessor::~PageLibPreprocessor()
 {
@@ -36,27 +41,27 @@ void PageLibPreprocessor::initPageLib(Configuration *pConf)
         vector<RssItem> test = reader.getItem();
         for (auto &item : test)
         {
-            bool isSimilar = false; // 用于标记是否找到相似文档
-            // 每一个文件都需要和之前的文件进行对比，相同则不加入
-            for (auto &existingDoc : _pageLib)
+            //判读是否是没有内容的文章
+            if(item.content.empty()&&item.description.empty())
             {
-                if (CompareTexts(existingDoc.getDoc(), item.content, simhasher))
-                {
-                    isSimilar = true; // 找到相似文档
-                    break;            // 跳出内层循环
-                }
+                break;
             }
-            // 如果没有找到相似文档，才将当前 item 加入 _pageLib
-            if (!isSimilar)
+            // 判读文章是否相同
+            uint64_t fileHash;
+            if (!CompareTexts(item.content+item.description, fileHash, simhasher))
             {
+                // 不相同则添加进网页库中，并保存对应的文章id和文章hash到filehash容器中
                 _pageLib.emplace_back(item, ++docid);
+                _testHash.emplace_back(fileHash);
             }
+            // _pageLib.emplace_back(item, ++docid);
         }
     }
+
 }
 
 // 计算海明距离的函数
-int PageLibPreprocessor::HammingDistance(uint64_t hash1, uint64_t hash2)
+int HammingDistance(uint64_t hash1, uint64_t hash2)
 {
     uint64_t x = hash1 ^ hash2; // 异或操作
     int dist = 0;
@@ -68,26 +73,35 @@ int PageLibPreprocessor::HammingDistance(uint64_t hash1, uint64_t hash2)
     return dist;
 }
 
-bool PageLibPreprocessor::CompareTexts(const std::string &text1, const std::string &text2, const Simhasher &simhasher)
+// 计算文章相似度函数
+bool PageLibPreprocessor::CompareTexts(const std::string &text1, uint64_t &fileHash, const Simhasher &simhasher)
 {
-    uint64_t hash1, hash2;
-
     // 生成两个文本的 SimHash
-    simhasher.make(text1, 5, hash1); // 5 是关键词个数
-    simhasher.make(text2, 5, hash2);
-
-    // 计算海明距离
-    int dist = HammingDistance(hash1, hash2);
-
-    std::cout << "Hamming Distance: " << dist << std::endl;
-
-    // 设置阈值，判断是否相似（例如：海明距离小于等于 3 时认为相似）
-    if (dist <= 3)
+    simhasher.make(text1, 5, fileHash); // 5 是关键词个数
+    for (auto &hash : _testHash)
     {
-        return true;
+        // 计算海明距离
+        int dist = HammingDistance(fileHash, hash);
+        // 设置阈值，判断是否相似（例如：海明距离小于等于 12 时认为相似）
+        if(dist<=8)
+        {
+            return true;
+        }
     }
-    else
+    //如果都不相同，则返回false
+    return false;
+}
+
+// 将去重后的网页库保存到文件，并生成一个offPageLib
+void PageLibPreprocessor::store()
+{
+    //打开文件
+    ofstream ofs_page("/home/lzc/SearchEg/data/ripepage.dat");
+    for(auto&item:_pageLib)
     {
-        return false;
+        ofs_page<<item.getDoc()<<"\n";
     }
+
+    //关闭文件
+    ofs_page.close();
 }

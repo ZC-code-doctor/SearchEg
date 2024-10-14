@@ -1,7 +1,7 @@
-all:demo
+all:pageLib
 
-demo:../src/demo.o ../src/WebPage.o  ../src/tinyxml2.o ../src/Rss.o ../src/PageLibPreprocessor.o ../src/Configuration.o
-	g++ ../src/demo.o ../src/PageLibPreprocessor.o ../src/WebPage.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o demo
+pageLib:../src/demo.o ../src/WebPage.o  ../src/tinyxml2.o ../src/Rss.o ../src/PageLibPreprocessor.o ../src/Configuration.o
+	g++ ../src/demo.o ../src/PageLibPreprocessor.o ../src/WebPage.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o pageLib
 ../src/demo.o:../src/demo.cc
 	g++ -c -g ../src/demo.cc -o ../src/demo.o -I ../include
 
