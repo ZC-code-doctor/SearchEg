@@ -6,7 +6,8 @@
 using std::cout;
 
 //构造函数
-SplitEn::SplitEn()
+SplitEn::SplitEn(Configuration* pConf)
+:_pConf(pConf)
 {
 }
 
@@ -17,21 +18,20 @@ SplitEn::~SplitEn()
 }
 
 //字符串切割操作
-vector<string> SplitEn::cut(Configuration* conf)
+vector<string> SplitEn::cut(const string& filename)
 {
     string dict_yuliao;
     string StopPath;
     vector<string> _file;
     //TODO:查找en的语料目录
-    dict_yuliao = conf->ConfigMap()["Yuliao"];
+    dict_yuliao = _pConf->ConfigMap()[filename];
 
     //查找该目录下的语料文件
     //查找英文语料库
-    dict_yuliao += "en_yuliao/";
-    _file = conf->getDirt(dict_yuliao); 
+    _file = _pConf->getDirt(dict_yuliao); 
 
     //加载停用词
-    set<string> StopWord = conf->getStopWordList();
+    set<string> StopWord = _pConf->getStopWordList();
     
     //打开文件
     vector<string> srcDict;
@@ -64,21 +64,34 @@ vector<string> SplitEn::cut(Configuration* conf)
 }
 
 
+// void SplitEn::clean(string& word)
+// {
+//     string temp;
+//     for(auto& ch:word)
+//     {
+//         if(std::isalpha(ch)||std::isalnum(ch))
+//         {
+//             if(isupper(ch))
+//             {
+//                 ch = tolower(ch);
+//             }
+//             temp += ch;
+//         }
+//     }
+//     word = temp;
+// }
+
 void SplitEn::clean(string& word)
 {
     string temp;
-    for(auto& ch:word)
+    for (auto& ch : word)
     {
-        if(std::isalpha(ch)||std::isalnum(ch))
+        if (std::isalnum(ch))  // isalnum 检查是否为字母或数字
         {
-            if(isupper(ch))
-            {
-                ch = tolower(ch);
-            }
-            temp += ch;
+            temp += std::tolower(ch);  // 直接转换为小写
         }
     }
-    word = temp;
+    word = temp;  // 将处理后的字符串赋值回 word
 }
 
 

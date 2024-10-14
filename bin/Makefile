@@ -1,9 +1,9 @@
 all:pageLib
 
-pageLib:../src/demo.o ../src/WebPage.o  ../src/tinyxml2.o ../src/Rss.o ../src/PageLibPreprocessor.o ../src/Configuration.o
-	g++ ../src/demo.o ../src/PageLibPreprocessor.o ../src/WebPage.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o pageLib
-../src/demo.o:../src/demo.cc
-	g++ -c -g ../src/demo.cc -o ../src/demo.o -I ../include
+pageLib:../src/pageLib.o ../src/WebPage.o  ../src/tinyxml2.o ../src/Rss.o ../src/PageLibPreprocessor.o ../src/Configuration.o
+	g++ ../src/pageLib.o ../src/PageLibPreprocessor.o ../src/WebPage.o ../src/Configuration.o ../src/tinyxml2.o ../src/Rss.o -o pageLib
+../src/pageLib.o:../src/pageLib.cc
+	g++ -c -g ../src/pageLib.cc -o ../src/pageLib.o -I ../include
 
 # CleanXML:../src/DirScanner.o ../src/FileProcessor.o ../src/tinyxml2.o ../src/Rss.o
 # 	g++ ../src/XMLdemo.o ../src/FileProcessor.o ../src/tinyxml2.o ../src/Rss.o -o CleanXML
@@ -27,11 +27,12 @@ pageLib:../src/demo.o ../src/WebPage.o  ../src/tinyxml2.o ../src/Rss.o ../src/Pa
 ../src/Rss.o:../src/Rss.cc ../include/Rss.hh
 	g++ -c -g ../src/Rss.cc -o ../src/Rss.o -I ../include
 
-# test:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o  ../src/main.o
-# 	g++ ../src/main.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o -o test
+#词库测试代码
+dictLib:../src/SplitEn.o ../src/SplitTool.o ../src/SplitZh.o ../src/DictProducer.o ../src/Configuration.o  ../src/dictLib.o
+	g++ ../src/dictLib.o ../src/DictProducer.o ../src/SplitEn.o ../src/SplitZh.o ../src/SplitTool.o ../src/Configuration.o -o dictLib
 
-../src/main.o:../src/main.cc
-	g++ -c -g ../src/main.cc -o ../src/main.o -I ../include
+../src/dictLib.o:../src/dictLib.cc
+	g++ -c -g ../src/dictLib.cc -o ../src/dictLib.o -I ../include
 
 #配置文件类
 ../src/Configuration.o:../src/Configuration.cc ../include/Configuration.h

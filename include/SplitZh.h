@@ -14,12 +14,12 @@ class SplitZh
 :public SplitTool
 {
 public:
-    SplitZh(); 
+    SplitZh(cppjieba::Jieba*,Configuration* conf); 
     virtual ~SplitZh();
-    virtual vector<string> cut(Configuration*);
-    cppjieba::Jieba* getJieba();
+    virtual vector<string> cut(const string& filename);
 private:
     cppjieba::Jieba* _jieba;
+    Configuration* _conf;
     
 };
 

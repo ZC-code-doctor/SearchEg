@@ -41,6 +41,7 @@ private:
     void initConfigs(const string&);
     //初始化停用词词集
     void initStopWord(const string&);
+    
 
 private:
     string _configFilePath;

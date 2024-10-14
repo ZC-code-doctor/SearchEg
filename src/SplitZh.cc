@@ -3,17 +3,11 @@
 #include "cppjieba/Jieba.hpp"
 
 
-SplitZh::SplitZh()
+SplitZh::SplitZh(cppjieba::Jieba* jieba,Configuration* conf)
+:_jieba(jieba)
+,_conf(conf)
 {
-    const char* const DICT_PATH = "../include/cppjieba/dict/jieba.dict.utf8";
-    const char* const HMM_PATH = "../include/cppjieba/dict/hmm_model.utf8";
-    const char* const USER_DICT_PATH = "../include/cppjieba/dict/user.dict.utf8";
-    const char* const IDF_PATH = "../include/cppjieba/dict/idf.utf8";
-    const char* const STOP_WORD_PATH = "../include/cppjieba/dict/stop_words.utf8";
 
-    //初始化结巴对象
-   _jieba = new cppjieba::Jieba (DICT_PATH,HMM_PATH,USER_DICT_PATH,IDF_PATH,STOP_WORD_PATH); 
-    
 }
 
 SplitZh::~SplitZh()
@@ -26,21 +20,20 @@ SplitZh::~SplitZh()
     }
 }
 
-vector<string> SplitZh::cut(Configuration* conf)
+vector<string> SplitZh::cut(const string& filename)
 {
     string dict_yuliao;
     string StopPath;
     vector<string> _file;
     //TODO:查找en的语料目录
-    dict_yuliao = conf->ConfigMap()["Yuliao"];
+    dict_yuliao = _conf->ConfigMap()[filename];
 
     //查找该目录下的语料文件
     //查找中文语料库
-    dict_yuliao += "zh_yuliao/";
-    _file = conf->getDirt(dict_yuliao); 
+    _file = _conf->getDirt(dict_yuliao);
 
-    //加载停用词
-    set<string> StopWord = conf->getStopWordList();
+    // //加载停用词
+    set<string> StopWord = _conf->getStopWordList();
     
     //打开文件
     vector<string> srcDict;
@@ -58,7 +51,7 @@ vector<string> SplitZh::cut(Configuration* conf)
            _jieba->Cut(line,words,true); 
            for(auto& word:words)
            {
-                if(!word.empty() && word!=" " && !StopWord.count(word))
+                if(!word.empty() && word!=" "&&!StopWord.count(word))
                 {
                     srcDict.push_back(word);
                 }
@@ -72,8 +65,3 @@ vector<string> SplitZh::cut(Configuration* conf)
     return srcDict;
 }
 
-
-cppjieba::Jieba* SplitZh::getJieba()
-{
-    return _jieba;
-}

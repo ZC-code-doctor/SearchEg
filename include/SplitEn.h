@@ -18,14 +18,15 @@ class SplitEn
 :public SplitTool
 {
 public:
-    SplitEn();
+    SplitEn(Configuration*);
     ~SplitEn();
-    virtual vector<string> cut(Configuration*) override;
+    virtual vector<string> cut(const string&) override;
 
 private:
     void clean(string& word);
 
 private:
+    Configuration* _pConf;
 
 };
 

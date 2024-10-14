@@ -6,12 +6,14 @@
 
 using std::ofstream;
 
-PageLibPreprocessor::PageLibPreprocessor(Configuration *pConf)
+PageLibPreprocessor::PageLibPreprocessor(Configuration *pConf, cppjieba::Jieba *jieba)
 {
     // 初始化网页库对象
     initPageLib(pConf);
 
-    //保存数据处理结果
+    // 生成倒排索引库
+    initInverLib(jieba);
+    // 保存数据处理结果
     store();
 }
 PageLibPreprocessor::~PageLibPreprocessor()
@@ -41,14 +43,14 @@ void PageLibPreprocessor::initPageLib(Configuration *pConf)
         vector<RssItem> test = reader.getItem();
         for (auto &item : test)
         {
-            //判读是否是没有内容的文章
-            if(item.content.empty()&&item.description.empty())
+            // 判读是否是没有内容的文章
+            if (item.content.empty() && item.description.empty())
             {
                 break;
             }
             // 判读文章是否相同
             uint64_t fileHash;
-            if (!CompareTexts(item.content+item.description, fileHash, simhasher))
+            if (!CompareTexts(item.content + item.description, fileHash, simhasher))
             {
                 // 不相同则添加进网页库中，并保存对应的文章id和文章hash到filehash容器中
                 _pageLib.emplace_back(item, ++docid);
@@ -57,7 +59,6 @@ void PageLibPreprocessor::initPageLib(Configuration *pConf)
             // _pageLib.emplace_back(item, ++docid);
         }
     }
-
 }
 
 // 计算海明距离的函数
@@ -83,25 +84,109 @@ bool PageLibPreprocessor::CompareTexts(const std::string &text1, uint64_t &fileH
         // 计算海明距离
         int dist = HammingDistance(fileHash, hash);
         // 设置阈值，判断是否相似（例如：海明距离小于等于 12 时认为相似）
-        if(dist<=8)
+        if (dist <= 8)
         {
             return true;
         }
     }
-    //如果都不相同，则返回false
+    // 如果都不相同，则返回false
     return false;
 }
 
 // 将去重后的网页库保存到文件，并生成一个offPageLib
 void PageLibPreprocessor::store()
 {
-    //打开文件
+    // 打开文件
     ofstream ofs_page("/home/lzc/SearchEg/data/ripepage.dat");
-    for(auto&item:_pageLib)
+    ofstream ofs_off("/home/lzc/SearchEg/data/offset.dat");
+    // 记录打开时文件指针的位置
+    std::streampos pos_cur = ofs_page.tellp();
+
+    for (auto &item : _pageLib)
     {
-        ofs_page<<item.getDoc()<<"\n";
+        // TODO：查看当前打开位置
+        //  获取文件指针位置
+        std::streampos pos_before = ofs_page.tellp();
+        int cur = pos_before - pos_cur;
+
+        // 保存文件内容
+        ofs_page << item.getDoc() << "\n";
+
+        // 查看保存后文件指针位置，计算偏移量length；
+        std::streampos pos_after = ofs_page.tellp();
+        int length = pos_after - pos_before;
+
+        // 保存文件的偏移量以及对应的文件id
+        ofs_off << item.getDocId() << "\t" << cur << "\t" << length << "\n";
     }
 
-    //关闭文件
+    // 关闭文件
+    ofs_off.close();
     ofs_page.close();
+}
+
+// 计算词频 (TF)
+map<string, double> PageLibPreprocessor::computeTF(const vector<string> &words)
+{
+    map<string, int> wordCount;
+    int totalWords = words.size();
+
+    // 统计每个词的出现次数
+    for (const auto &word : words)
+    {
+        wordCount[word]++;
+    }
+
+    // 计算 TF 值
+    map<string, double> tf;
+    for (const auto &[word, count] : wordCount)
+    {
+        tf[word] = (double)count / totalWords; // 词频 = 该词出现次数 / 总词数
+    }
+
+    return tf;
+}
+
+// 计算逆文档频率 (IDF)
+map<string, double> PageLibPreprocessor::computeIDF(const vector<vector<string>> &documents)
+{
+    map<string, int> docCount;
+    int totalDocs = documents.size();
+
+    // 统计每个词在多少个文档中出现
+    for (const auto &doc : documents)
+    {
+        set<string> uniqueWords(doc.begin(), doc.end()); // 使用 set 去重
+        for (const auto &word : uniqueWords)
+        {
+            docCount[word]++;
+        }
+    }
+
+    // 计算 IDF
+    map<string, double> idf;
+    for (const auto &[word, count] : docCount)
+    {
+        idf[word] = log((double)totalDocs / (count + 1)); // +1 防止除零
+    }
+
+    return idf;
+}
+
+// 计算 TF-IDF
+map<string, double> PageLibPreprocessor::computeTFIDF(const vector<string> &words, const map<string, double> &idf)
+{
+    map<string, double> tf = computeTF(words);
+    map<string, double> tfidf;
+
+    for (const auto &[word, tfValue] : tf)
+    {
+        tfidf[word] = tfValue * idf.at(word); // TF-IDF = TF * IDF
+    }
+
+    return tfidf;
+}
+
+void PageLibPreprocessor::initInverLib(cppjieba::Jieba *)
+{
 }
