@@ -29,7 +29,7 @@ public:
 
 private:
     void initPageLib(Configuration *pConf);
-    void initInverLib(cppjieba::Jieba*);
+    void initInverLib();
     void store();
 
     //辅助函数
@@ -41,12 +41,15 @@ private:
     map<string, double> computeIDF(const vector<vector<string>>& documents);
     // 计算 TF-IDF
     map<string, double> computeTFIDF(const vector<string>& words, const map<string, double>& idf);
+    // 切割文章
+    vector<string> split(const string& text);
 private:
 
     vector<WebPage> _pageLib;                                           //网页库
     unordered_map<int,pair<int,int>> _offsetLib;                        //网页偏移库
     unordered_map<string,set<pair<int,double>>> _invertIndexTable;      //倒排索引表
     vector<uint64_t> _testHash;                                         //文章hash指纹
+    cppjieba::Jieba* _jieba;
 };
 
 int HammingDistance(uint64_t hash1, uint64_t hash2);

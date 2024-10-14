@@ -51,6 +51,7 @@ Configuration::Configuration(const string& confpath)
 
 Configuration::~Configuration()
 {
+    std::cout<<"~Configuration"<<"\n";
 }
     
 //初始化配置文件内容
