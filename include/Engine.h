@@ -3,17 +3,18 @@
 
 #include "Configuration.h"
 #include "WebPage.h"
+#include "Tools.h"
 
 
 #include <memory>
-#include <unordered_map>
+#include <map>
 #include <map>
 #include <string>
 #include <set>
 #include <cppjieba/Jieba.hpp>
 
 using std::shared_ptr;
-using std::unordered_map;
+using std::map;
 using std::map;
 using std::string;
 using std::set;
@@ -50,7 +51,8 @@ private:
     //分割字符串类
     size_t getByteNum_UTF8(const char byte);
     vector<string> spiltWord(const string&);
-
+    //网页搜索
+    vector<set<pair<int, double>>> getDocidSet(const vector<string>& );
 
 private:
     Configuration* _pConf;
@@ -59,8 +61,8 @@ private:
     vector<pair<string,int>>* _yuliaoTable;
     map<string,set<int>>* _indexTable;
 
-    unordered_map<int,pair<int,int>>* _offsetTable;
-    unordered_map<string,set<pair<int,double>>>* _invertIndexTable;
+    map<int,pair<int,int>>* _offsetTable;
+    map<string,set<pair<int,double>>>* _invertIndexTable;
 };
 
 

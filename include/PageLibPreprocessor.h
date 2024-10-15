@@ -35,12 +35,6 @@ private:
     //辅助函数
     bool CompareTexts(const std::string& text1, uint64_t& fileHash ,const Simhasher& simhasher);
 
-    // 计算词频 (TF)
-    map<string, double> computeTF(const vector<string>& words);
-    // 计算逆文档频率 (IDF)
-    map<string, double> computeIDF(const vector<vector<string>>& documents);
-    // 计算 TF-IDF
-    map<string, double> computeTFIDF(const vector<string>& words, const map<string, double>& idf);
     // 切割文章
     vector<string> split(const string& text);
 private:

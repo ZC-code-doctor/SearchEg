@@ -2,6 +2,7 @@
 #include "WebPage.h"
 #include "Configuration.h"
 #include "Rss.hh"
+#include "Tools.h"
 #include <fstream>
 
 using std::ofstream;
@@ -22,6 +23,7 @@ PageLibPreprocessor::~PageLibPreprocessor()
 {
 }
 
+//创建去重网页库
 void PageLibPreprocessor::initPageLib(Configuration *pConf)
 {
     // 创建simhash对象清洗重复网页
@@ -61,19 +63,6 @@ void PageLibPreprocessor::initPageLib(Configuration *pConf)
             // _pageLib.emplace_back(item, ++docid);
         }
     }
-}
-
-// 计算海明距离的函数
-int HammingDistance(uint64_t hash1, uint64_t hash2)
-{
-    uint64_t x = hash1 ^ hash2; // 异或操作
-    int dist = 0;
-    while (x)
-    {
-        dist += x & 1; // 统计 1 的个数
-        x >>= 1;
-    }
-    return dist;
 }
 
 // 计算文章相似度函数
@@ -141,68 +130,6 @@ void PageLibPreprocessor::store()
     ofs_inv.close();
 }
 
-// 计算词频 (TF)
-map<string, double> PageLibPreprocessor::computeTF(const vector<string> &words)
-{
-    map<string, int> wordCount;
-    int totalWords = words.size();
-
-    // 统计每个词的出现次数
-    for (const auto &word : words)
-    {
-        wordCount[word]++;
-    }
-
-    // 计算 TF 值
-    map<string, double> tf;
-    for (const auto &[word, count] : wordCount)
-    {
-        tf[word] = (double)count / totalWords; // 词频 = 该词出现次数 / 总词数
-    }
-
-    return tf;
-}
-
-// 计算逆文档频率 (IDF)
-map<string, double> PageLibPreprocessor::computeIDF(const vector<vector<string>> &documents)
-{
-    map<string, int> docCount;
-    int totalDocs = documents.size();
-
-    // 统计每个词在多少个文档中出现
-    for (const auto &doc : documents)
-    {
-        set<string> uniqueWords(doc.begin(), doc.end()); // 使用 set 去重
-        for (const auto &word : uniqueWords)
-        {
-            docCount[word]++;
-        }
-    }
-
-    // 计算 IDF
-    map<string, double> idf;
-    for (const auto &[word, count] : docCount)
-    {
-        idf[word] = log((double)totalDocs / (count + 1)); // +1 防止除零
-    }
-
-    return idf;
-}
-
-// 计算 TF-IDF
-map<string, double> PageLibPreprocessor::computeTFIDF(const vector<string> &words, const map<string, double> &idf)
-{
-    map<string, double> tf = computeTF(words);
-    map<string, double> tfidf;
-
-    for (const auto &[word, tfValue] : tf)
-    {
-        tfidf[word] = tfValue * idf.at(word); // TF-IDF = TF * IDF
-    }
-
-    return tfidf;
-}
-
 // 切割文章
 vector<string> PageLibPreprocessor::split(const string &text)
 {
@@ -230,7 +157,7 @@ void PageLibPreprocessor::initInverLib()
         map<string, double> tfidf = computeTFIDF(documents[i], idf);
         for (const auto& [word, value] : tfidf) {
 
-            _invertIndexTable[word].insert(pair<int,double>(i+1,value+1));
+            _invertIndexTable[word].insert(pair<int,double>(i+1,value));
         }
     }
 
