@@ -5,7 +5,7 @@ WebPage::WebPage(RssItem item,int id)
 {
     _docid = id;
     _docTitle = item.title;
-    _docUrl = item.url;
+    _docUrl = item.link;
     if(item.content.empty())
     {
         _docContent = item.description;

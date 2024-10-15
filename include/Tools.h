@@ -6,7 +6,9 @@
 #include <vector>
 #include <set>
 #include <math.h>
+#include <string>
 
+using std::string;
 using std::set;
 using std::vector;
 using std::string;
@@ -23,6 +25,12 @@ map<string, double> computeTFIDF(const vector<string> &words, const map<string, 
 // 计算海明距离的函数
 int HammingDistance(uint64_t hash1, uint64_t hash2);
 //Jaccard 相似度衡量两个集合相似度
-vector<pair<int,double>> jaccardSimilarity(const vector<double> &vec1, const map<int,vector<double>> &vec2);
+map<double,int> jaccardSimilarity(const vector<double> &vec1, const map<int,vector<double>> &vec2);
+
+//最小编辑算法
+size_t nBytesCode(const char ch);
+std::size_t length(const std::string &str);
+int triple_min(const int &a, const int &b, const int &c);
+int editDistance(const std::string &lhs, const std::string &rhs);
 
 #endif

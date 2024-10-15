@@ -1,10 +1,12 @@
 #include "Engine.h"
+#include "tinyxml2.h"
 
 #include <fstream>
 #include <sstream>
 
 using std::ifstream;
 using std::istringstream;
+using namespace tinyxml2;
 using namespace cppjieba;
 
 Engine_basic::~Engine_basic()
@@ -138,8 +140,25 @@ void Engine::loadResoure()
 vector<string> Engine::recommendWord(const string &keyWord)
 {
     vector<string> ch = spiltWord(keyWord);
+    vector<string> recommend;
+    set<int> dictSet;
+    for(auto&elem:ch)
+    {
+        for(auto&num:(*_indexTable)[elem])
+        {
+            dictSet.insert(num);
+        }
+    }
 
-    return ch;
+    for(auto&idx:dictSet)
+    {
+        int distance=editDistance(keyWord,(*_yuliaoTable)[idx].first);
+        if(distance<=1)
+        {
+            recommend.push_back((*_yuliaoTable)[idx].first);
+        }
+    }    
+    return recommend;
 }
 
 vector<string> Engine::spiltWord(const string &keyWord)
@@ -172,11 +191,49 @@ vector<string> Engine::spiltWord(const string &keyWord)
 }
 
 // 匹配网页
-WebPage Engine::SearchPage(const string &keyWord)
+vector<json> Engine::SearchPage(const string &keyWord)
 {
     vector<string> word;
     _jieba->Cut(keyWord, word, true);
 
+    // 清洗字符串
+    vector<string> SearchWord = cleanKeyWord(word);
+    std::cout<<"关键词:";
+    for(auto&elem:SearchWord)
+    {
+        std::cout<<elem<<" ";
+    }
+    std::cout<<"\n";
+
+    // 计算TF-IDF值生成查询向量
+    std::vector<double> queryVector = KeyWord_TFIDF(SearchWord);
+
+    // 获取一个关键词重合度高于x的文件集合
+    map<int, vector<double>> fileVector = get_FileVecotr(SearchWord, queryVector.size(), 0.5);
+
+    // 计算集合之间的相似度
+    map<double, int> fileSimply = jaccardSimilarity(queryVector, fileVector);
+
+    // 获取文章内容集合
+    vector<pair<string,string>> matchFile = getFile(fileSimply);
+
+    //返回构建好的JSON对象
+    vector<json> jsonPage;
+    for(auto&elem:matchFile)
+    {
+            // 构造 JSON 对象
+            json j;
+            j["url"] = elem.first;
+            j["title"] = elem.second;
+            jsonPage.push_back(j);
+    }
+
+    return jsonPage;
+}
+
+// 清洗字符串
+vector<string> Engine::cleanKeyWord(vector<string> &word)
+{
     vector<string> SearchWord;
     for (auto &elem : word)
     {
@@ -188,6 +245,40 @@ WebPage Engine::SearchPage(const string &keyWord)
             SearchWord.emplace_back(elem);
         }
     }
+    return SearchWord;
+}
+
+// 获取一个关键词重合度高于x的文件集合
+map<int, vector<double>> Engine::get_FileVecotr(const vector<string> &SearchWord, int query_size, double threshold)
+{
+    // 创建一个所有有关关键词文章的maps
+    map<int, vector<double>> srcVector;
+    // 获取所有出现过关键词的网页的集合
+    vector<set<pair<int, double>>> docidWeight = getDocidSet(SearchWord);
+    for (auto &elem : docidWeight)
+    {
+        for (auto &kv : elem)
+        {
+            srcVector[kv.first].push_back(kv.second);
+        }
+    }
+
+    map<int, vector<double>> fileVector;
+    for (auto &elem : srcVector)
+    {
+        // 如果该文章下的向量数量与查询向量数一致，则说明所有查询词都出现在该文章中
+        if (elem.second.size() >= query_size * threshold)
+        {
+            // 添加到文章特征向量容器中
+            fileVector.emplace(elem.first, elem.second);
+        }
+    }
+    return fileVector;
+}
+
+// 计算关键字的查询向量
+vector<double> Engine::KeyWord_TFIDF(const vector<string> &SearchWord)
+{
     // 利用TF-IDF算法算出每一个查询词的权重；
     // 计算TF值
     map<string, double> tf = computeTF(SearchWord);
@@ -208,53 +299,65 @@ WebPage Engine::SearchPage(const string &keyWord)
         double tfidf = tf[word] * idf[word]; // 计算TF-IDF
         queryVector.push_back(tfidf);        // 加入查询向量
     }
-    std::cout<<"查询向量= ";
-    for(auto&elem:queryVector)
-    {
-        std::cout<<elem<<",";
-    }
-    std::cout<<"\n";
-
-    //创建一个所有有关关键词文章的map
-    map<int,vector<double>> srcVector;
-    //获取所有出现过关键词的网页的集合
-    vector<set<pair<int, double>>> docidWeight = getDocidSet(SearchWord);
-    for (auto &elem : docidWeight)
-    {
-        for (auto &kv : elem)
-        {
-            srcVector[kv.first].push_back(kv.second);
-        }
-    }
-
-    map<int,vector<double>> fileVector;
-    double threshold = 0.5;  // 设置一个比例阈值，如至少50%的查询词需要出现在文档中
-    for(auto&elem:srcVector)
-    {
-        //如果该文章下的向量数量与查询向量数一致，则说明所有查询词都出现在该文章中
-        if(elem.second.size()>=queryVector.size()*threshold)
-        {
-            //添加到文章特征向量容器中
-            fileVector.emplace(elem.first,elem.second);
-        }
-    }
-    //计算集合之间的相似度
-    vector<pair<int, double>>fileSimply  =  jaccardSimilarity(queryVector, fileVector);
-    for(auto&fileId:fileSimply)
-    {
-        std::cout<<fileId.first<<","<<fileId.second<<"\n";
-    }
-    std::cout<<"结束输出"<<"\n";
+    return queryVector;
 }
 
+// 获取倒排索引出现的集合
 vector<set<pair<int, double>>> Engine::getDocidSet(const vector<string> &keyWord)
 {
     vector<set<pair<int, double>>> res;
     for (auto &elem : keyWord)
     {
-        std::cout << "Search=" << elem << "\n";
         res.emplace_back((*_invertIndexTable)[elem]);
     }
+    return res;
+}
+
+// 获取文章内容集合
+vector<pair<string,string>> Engine::getFile(const map<double, int> &fileSimply)
+{
+    auto it = fileSimply.rbegin();
+    vector<pair<int, int>> offFile;
+    vector<string> filePage;
+    vector<pair<string,string>> res;
+    filePage.reserve(1000);
+    // 创建一个文件打开对象
+    string pagePath = _pConf->ConfigMap()["Ripepage"];
+    // 二进制形式打开，保证原汁原味读取
+    ifstream ifs(pagePath, std::ios_base::binary);
+
+    for (; it != fileSimply.rend(); ++it)
+    {
+        offFile.push_back((*_offsetTable)[(*it).second]);
+    }
+    for (auto &elem : offFile)
+    {
+        string page;
+        page.resize(elem.second);
+        ifs.seekg(elem.first, std::ios::beg);
+        ifs.read(&page[0], elem.second);
+        filePage.push_back(page);
+    }
+    
+    for (auto &xml : filePage)
+    {
+        XMLDocument doc;
+        doc.Parse(xml.c_str());
+
+        // 获取 <url> 和 <title> 节点
+        XMLElement *urlElement = doc.FirstChildElement("doc")->FirstChildElement("url");
+        XMLElement *titleElement = doc.FirstChildElement("doc")->FirstChildElement("title");
+
+        if (urlElement && titleElement)
+        {
+            const char *url = urlElement->GetText();
+            const char *title = titleElement->GetText();
+
+            res.emplace_back(url,title);
+        }
+    }
+
+    ifs.close();
     return res;
 }
 

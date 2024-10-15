@@ -4,6 +4,7 @@
 #include "Configuration.h"
 #include "WebPage.h"
 #include "Tools.h"
+#include "nlohmann/json.hpp"
 
 
 #include <memory>
@@ -13,6 +14,7 @@
 #include <set>
 #include <cppjieba/Jieba.hpp>
 
+using json = nlohmann::json;
 using std::shared_ptr;
 using std::map;
 using std::map;
@@ -24,12 +26,17 @@ using std::pair;
 class Engine_basic
 {
 public:
+    Engine_basic()=default;
     virtual ~Engine_basic();
     virtual void loadResoure()=0;
-    virtual WebPage SearchPage(const string&)=0;
+    virtual vector<json> SearchPage(const string&)=0;
     virtual vector<string> recommendWord(const string&)=0;
 private:
-
+    //禁止拷贝构造、赋值运算符函数、移动语义
+    Engine_basic(const Engine_basic&);
+    Engine_basic(const Engine_basic&&);
+    const Engine_basic& operator=(const Engine_basic& rhs);
+    const Engine_basic& operator=(const Engine_basic&& rhs);
 };
 
 
@@ -46,13 +53,19 @@ public:
     //推荐候选词
     virtual vector<string> recommendWord(const string&)override;
     //匹配网页
-    virtual WebPage SearchPage(const string&)override;
+    virtual vector<json> SearchPage(const string&)override;
 private:
     //分割字符串类
     size_t getByteNum_UTF8(const char byte);
     vector<string> spiltWord(const string&);
     //网页搜索
     vector<set<pair<int, double>>> getDocidSet(const vector<string>& );
+    vector<double> KeyWord_TFIDF(const vector<string>& word);
+    map<int,vector<double>> get_FileVecotr(const vector<string>& SearchWord,int ,double threshold);
+    vector<pair<string,string>> getFile(const map<double,int>&);
+    vector<string> cleanKeyWord(vector<string>& );
+
+
 
 private:
     Configuration* _pConf;

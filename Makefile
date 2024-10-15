@@ -17,5 +17,5 @@ LoadResource: bin/LoadResource.o bin/PageLibPreprocessor.o bin/WebPage.o \
 	g++ $^ -o LoadResource $(LDFLAGS)
 
 
-Engine:bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/test.o
+Engine:bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/tinyxml2.o bin/test.o
 	g++ $^ -o Engine $(LDFLAGS)
