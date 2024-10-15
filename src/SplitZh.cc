@@ -51,7 +51,8 @@ vector<string> SplitZh::cut(const string& filename)
            _jieba->Cut(line,words,true); 
            for(auto& word:words)
            {
-                if(!word.empty() && word!=" "&&!StopWord.count(word))
+                bool containsPunct = std::any_of(word.begin(), word.end(), [](char c){ return std::ispunct(static_cast<unsigned char>(c)); });
+                if(!word.empty() && word!=" "&& !containsPunct && !StopWord.count(word) )
                 {
                     srcDict.push_back(word);
                 }

@@ -95,4 +95,3 @@ vector<RssItem> RssReader::getItem()
 {
     return _rss;
 }
-

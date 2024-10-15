@@ -1,7 +1,7 @@
 INCLUDES = -I ../include
 CXXFLAGS = -c -g $(INCLUDES)
 
-all: Search 
+all: Engine
 
 # 通用规则
 %.o: %.cc
@@ -14,5 +14,5 @@ loadResource: ../src/LoadResource.o ../src/PageLibPreprocessor.o ../src/WebPage.
 	g++ $^ -o loadResource
 
 
-Search:../src/Search.o ../src/Configuration.o ../src/test.o ../src/WebPage.o
-	g++ $^ -o Search
+Engine:../src/Engine.o ../src/Configuration.o ../src/WebPage.o ../src/test.o
+	g++ $^ -o Engine

@@ -109,7 +109,7 @@ vector<string> Configuration::getDirt(const string&dirt)
             filename.push_back(res);   //保存文件名到_file
         }
     }
-
+    closedir(dir);
     return filename;
 }
 
