@@ -47,7 +47,11 @@ void Tcp_server::onMessage(const Tcpconnection_ptr &con)
 
     // TODO:服务器接收到消息后解析指令
     HttpRequest recv = parseHttpRequest(msg);
-    // string msg = recv.method;
+
+    // 1、HTTP GET任务则打包成发送原始网页
+    // 2、HTTP POST任务则打包成获取网页任务
+    // 3、HTTP PUT任务则打包成关键词推荐任务
+
     if (recv.method == "GET")
     {
         // 将收到数据和TCP对象打包
@@ -73,13 +77,6 @@ void Tcp_server::onMessage(const Tcpconnection_ptr &con)
         addTask(_pool, pack);
         std::cout << "推荐任务" << "\n";
     }
-    // 1、HTTP GET任务则打包成获取网页任务
-    // 2、HTTP PUT任务则打包成搜索任务
-
-    // 将收到数据和TCP对象打包
-    // Packge pack(msg, con);
-    // 将任务包发给子线程(con、msg)
-    // addTask(_pool, pack);
 }
 void Tcp_server::onNewConnection(const Tcpconnection_ptr &con)
 {

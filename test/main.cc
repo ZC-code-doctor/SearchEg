@@ -1,84 +1,29 @@
+#include <sw/redis++/redis++.h>
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <map>
 
+using namespace sw::redis;
 using namespace std;
 
-// 解析 HTTP 请求行
-struct HttpRequest {
-    string method; // 请求方法
-    string url;    // 请求的 URL
-    string version; // HTTP 版本
-    map<string, string> headers; // 请求头
-    string body;   // 请求体 (如果有)
-
-    void parseRequestLine(const string& requestLine) {
-        istringstream iss(requestLine);
-        iss >> method >> url >> version;
-    }
-
-    void addHeader(const string& headerLine) {
-        size_t pos = headerLine.find(':');
-        if (pos != string::npos) {
-            string key = headerLine.substr(0, pos);
-            string value = headerLine.substr(pos + 1);
-            headers[key] = value;
-        }
-    }
-
-    void setBody(const string& bodyContent) {
-        body = bodyContent;
-    }
-};
-
-// 解析收到的 HTTP 请求
-HttpRequest parseHttpRequest(const string& msg) {
-    HttpRequest request;
-    istringstream ss(msg);
-    string line;
-
-    // 解析请求行 (第一行)
-    if (getline(ss, line)) {
-        request.parseRequestLine(line);
-    }
-
-    // 解析请求头
-    while (getline(ss, line) && line != "\r") {
-        if (!line.empty()) {
-            request.addHeader(line);
-        }
-    }
-
-    // 解析请求体 (可选)
-    if (getline(ss, line)) {
-        request.setBody(line);
-    }
-
-    return request;
-}
-
 int main() {
-    string httpMsg = "GET /index.html HTTP/1.1\r\n"
-                     "Host: www.example.com\r\n"
-                     "User-Agent: Mozilla/5.0\r\n"
-                     "Accept: text/html\r\n\r\n";
+    try {
+        // 创建 Redis 对象，连接到 Redis 服务器
+        auto redis = Redis("tcp://127.0.0.1:6379");
 
-    HttpRequest request = parseHttpRequest(httpMsg);
+        // 设置 key-value 对
+        redis.set("key", "value");
 
-    // 输出解析结果
-    cout << "Method: " << request.method << endl;
-    cout << "URL: " << request.url << endl;
-    cout << "Version: " << request.version << endl;
-
-    for (const auto& header : request.headers) {
-        cout << "Header: " << header.first << " = " << header.second << endl;
-    }
-
-    if (!request.body.empty()) {
-        cout << "Body: " << request.body << endl;
+        // 获取 key 的值
+        auto val = redis.get("key");
+        if (val) {
+            // 如果 key 存在
+            cout << "key: " << *val << endl;
+        } else {
+            // 如果 key 不存在
+            cout << "key does not exist" << endl;
+        }
+    } catch (const Error &e) {
+        cerr << "Redis error: " << e.what() << endl;
     }
 
     return 0;
 }
-
