@@ -20,7 +20,7 @@ Engine::Engine(Configuration *pConf, shared_ptr<cppjieba::Jieba> jieba)
     , _indexTable(new map<string, set<int>>())
     , _offsetTable(new map<int, pair<int, int>>())
     , _invertIndexTable(new map<string, set<pair<int, double>>>())
-    , _cache(2)
+    , _cacheManager()
 {
     // 预留一片内存空间
     // _offsetTable->reserve(10000);
@@ -202,10 +202,12 @@ vector<json> Engine::SearchPage(const string &keyWord)
 {
     vector<string> word;
     vector<json> jsonPage;
+    std::thread::id this_id = std::this_thread::get_id();
+    std::cout << "Current thread ID: " << this_id << std::endl;
+    LRUcache& _cache = (*_cacheManager.getCache(this_id));
+    sleep(10);
     //读取缓存时加锁
-    _mtx.lock();
     bool isHit = _cache.readCache(keyWord, jsonPage);
-    _mtx.unlock();
     if (isHit)
     {
         std::cout<<"引擎缓存命中\n";
@@ -241,11 +243,8 @@ vector<json> Engine::SearchPage(const string &keyWord)
             jsonPage.push_back(j);
         }
         //往缓存中插入数据
-        _mtx.lock();
         _cache.addElement(keyWord,jsonPage);
-        _mtx.unlock();
     }
-
     return jsonPage;
 }
 

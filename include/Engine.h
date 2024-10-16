@@ -80,7 +80,6 @@ private:
     map<int,pair<int,int>>* _offsetTable;
     map<string,set<pair<int,double>>>* _invertIndexTable;
     //引擎缓存
-    LRUcache _cache;
     CacheManager _cacheManager;
     //缓存锁，进行缓存操作时进行加锁
     std::mutex _mtx;

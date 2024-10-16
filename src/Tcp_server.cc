@@ -2,7 +2,7 @@
 #include "Tools.h"
 
 Tcp_server::Tcp_server(const string &ip, unsigned short port, Engine_basic *engine)
-    : _acceptor(ip, port), _ioserver(), _acceptserver(_acceptor, _ioserver), _pool(10), _engine(engine)
+    : _acceptor(ip, port), _ioserver(), _acceptserver(_acceptor, _ioserver), _pool(3), _engine(engine)
 {
     // vector<string> res = _engine->recommendWord("你");
     // std::cout<<"候选词：";

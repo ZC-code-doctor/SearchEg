@@ -6,6 +6,10 @@
 #include <unordered_map>
 #include <vector>
 #include <map>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/syscall.h>
+#include <thread>  // for std::this_thread::get_id
 
 #include "nlohmann/json.hpp"
 
@@ -20,8 +24,8 @@ using std::string;
 class LRUcache
 {
 public:
-    LRUcache()=default;
-    LRUcache(int capacity);
+    // LRUcache()=default;
+    LRUcache(int capacity=3);
     ~LRUcache();
     void addElement(const string &key,vector<json> value);
     bool readCache(const string& keyWords , vector<json>& );
@@ -39,11 +43,11 @@ private:
 class CacheManager
 {
 public:
-    LRUcache & getCache(int idx);
+    LRUcache* getCache(std::thread::id idx);
     void periodicUpdateCaches();
 private:
-    //线程id对应一个LRU实例
-    map<int,LRUcache> _cacheList;
+    //线程id对应一个LRU实例,存放堆上的指针
+    map<std::thread::id,LRUcache*> _cacheList;
 };
 
 

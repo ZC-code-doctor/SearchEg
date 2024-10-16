@@ -3,6 +3,7 @@
 
 
 
+
 LRUcache::LRUcache(int capacity)
     : _capacity(capacity)
     , _hashMap(new unordered_map<string, list<vector<json>>::iterator>())
@@ -25,6 +26,8 @@ LRUcache::~LRUcache()
 }
 void LRUcache::addElement(const string &key, vector<json> value)
 {
+
+    
     if (_resultsList->size() >= _capacity)
     {
         // 找到与第一个节点对应的键
@@ -70,13 +73,13 @@ bool LRUcache::readCache(const string &keyWords, vector<json> &jsonSet)
 
 // LRU管理类
 // 根据线程获取对应的LRUcache对象
-LRUcache &CacheManager::getCache(int threadId)
+LRUcache* CacheManager::getCache(std::thread::id threadId)
 {
     // 检查 map 中是否有对应线程 ID 的缓存
     if (_cacheList.find(threadId) == _cacheList.end())
     {
         // 如果没有找到，使用 emplace 创建一个新的 LRUcache，并插入 map
-        _cacheList.emplace(threadId, LRUcache(3)); // 假设容量为 3
+        _cacheList.emplace(threadId, new LRUcache(3)); // 假设容量为 3
     }
     // 返回线程对应的缓存
     return _cacheList[threadId];
