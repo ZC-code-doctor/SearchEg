@@ -1,99 +1,84 @@
 #include <iostream>
-#include <map>
-#include <string>
-#include <vector>
-#include <cmath>
 #include <sstream>
-#include <set>
+#include <string>
+#include <map>
 
 using namespace std;
 
-// 计算词频 (TF)
-map<string, double> computeTF(const vector<string>& words) {
-    map<string, int> wordCount;
-    int totalWords = words.size();
+// 解析 HTTP 请求行
+struct HttpRequest {
+    string method; // 请求方法
+    string url;    // 请求的 URL
+    string version; // HTTP 版本
+    map<string, string> headers; // 请求头
+    string body;   // 请求体 (如果有)
 
-    // 统计每个词的出现次数
-    for (const auto& word : words) {
-        wordCount[word]++;
+    void parseRequestLine(const string& requestLine) {
+        istringstream iss(requestLine);
+        iss >> method >> url >> version;
     }
 
-    // 计算 TF 值
-    map<string, double> tf;
-    for (const auto& [word, count] : wordCount) {
-        tf[word] = (double)count / totalWords;  // 词频 = 该词出现次数 / 总词数
-    }
-
-    return tf;
-}
-
-// 计算逆文档频率 (IDF)
-map<string, double> computeIDF(const vector<vector<string>>& documents) {
-    map<string, int> docCount;
-    int totalDocs = documents.size();
-
-    // 统计每个词在多少个文档中出现
-    for (const auto& doc : documents) {
-        set<string> uniqueWords(doc.begin(), doc.end());  // 使用 set 去重
-        for (const auto& word : uniqueWords) {
-            docCount[word]++;
+    void addHeader(const string& headerLine) {
+        size_t pos = headerLine.find(':');
+        if (pos != string::npos) {
+            string key = headerLine.substr(0, pos);
+            string value = headerLine.substr(pos + 1);
+            headers[key] = value;
         }
     }
 
-    // 计算 IDF
-    map<string, double> idf;
-    for (const auto& [word, count] : docCount) {
-        idf[word] = log((double)totalDocs / (count + 1));  // +1 防止除零
+    void setBody(const string& bodyContent) {
+        body = bodyContent;
+    }
+};
+
+// 解析收到的 HTTP 请求
+HttpRequest parseHttpRequest(const string& msg) {
+    HttpRequest request;
+    istringstream ss(msg);
+    string line;
+
+    // 解析请求行 (第一行)
+    if (getline(ss, line)) {
+        request.parseRequestLine(line);
     }
 
-    return idf;
-}
-
-// 计算 TF-IDF
-map<string, double> computeTFIDF(const vector<string>& words, const map<string, double>& idf) {
-    map<string, double> tf = computeTF(words);
-    map<string, double> tfidf;
-
-    for (const auto& [word, tfValue] : tf) {
-        tfidf[word] = tfValue * idf.at(word);  // TF-IDF = TF * IDF
+    // 解析请求头
+    while (getline(ss, line) && line != "\r") {
+        if (!line.empty()) {
+            request.addHeader(line);
+        }
     }
 
-    return tfidf;
-}
-
-// 分词函数（简单按空格分词）
-vector<string> split(const string& text) {
-    stringstream ss(text);
-    string word;
-    vector<string> words;
-
-    while (ss >> word) {
-        words.push_back(word);
+    // 解析请求体 (可选)
+    if (getline(ss, line)) {
+        request.setBody(line);
     }
 
-    return words;
+    return request;
 }
 
 int main() {
-    // 示例文档集
-    vector<string> doc1 = split("今天 天气 很好");
-    vector<string> doc2 = split("今天 天气 不好");
-    vector<string> doc3 = split("昨天 天气 很好");
+    string httpMsg = "GET /index.html HTTP/1.1\r\n"
+                     "Host: www.example.com\r\n"
+                     "User-Agent: Mozilla/5.0\r\n"
+                     "Accept: text/html\r\n\r\n";
 
-    vector<vector<string>> documents = {doc1, doc2, doc3};
+    HttpRequest request = parseHttpRequest(httpMsg);
 
-    // 计算 IDF 值
-    map<string, double> idf = computeIDF(documents);
+    // 输出解析结果
+    cout << "Method: " << request.method << endl;
+    cout << "URL: " << request.url << endl;
+    cout << "Version: " << request.version << endl;
 
-    // 对每个文档计算 TF-IDF
-    for (int i = 0; i < documents.size(); ++i) {
-        cout << "Document " << i + 1 << " TF-IDF values:" << endl;
-        map<string, double> tfidf = computeTFIDF(documents[i], idf);
-        for (const auto& [word, value] : tfidf) {
-            cout << word << ": " << value + 1 << endl;
-        }
-        cout << endl;
+    for (const auto& header : request.headers) {
+        cout << "Header: " << header.first << " = " << header.second << endl;
+    }
+
+    if (!request.body.empty()) {
+        cout << "Body: " << request.body << endl;
     }
 
     return 0;
 }
+

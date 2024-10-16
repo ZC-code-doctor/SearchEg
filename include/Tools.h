@@ -33,4 +33,18 @@ std::size_t length(const std::string &str);
 int triple_min(const int &a, const int &b, const int &c);
 int editDistance(const std::string &lhs, const std::string &rhs);
 
+//解析HTTP请求
+//解析后的结构体
+struct HttpRequest {
+    std::string method;                   // 请求方法
+    std::string url;                      // 请求URL
+    std::map<std::string, std::string> headers;  // 请求头
+    std::string body;                     // 请求体
+
+    void parseRequestLine(const string& requestLine);
+    void addHeader(const string& headerLine);
+    void setBody(const string& bodyContent);
+};
+//解析请求
+HttpRequest parseHttpRequest(const string& msg);
 #endif

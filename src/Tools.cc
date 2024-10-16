@@ -1,5 +1,9 @@
 #include "Tools.h"
 
+#include <sstream>
+
+using std::istringstream;
+
 // 计算词频 (TF)
 map<string, double> computeTF(const vector<string> &words)
 {
@@ -146,7 +150,7 @@ int triple_min(const int &a, const int &b, const int &c)
     return a < b ? (a < c ? a : c) : (b < c ? b : c);
 }
 
-//最小编辑算法
+// 最小编辑算法
 int editDistance(const std::string &lhs, const std::string &rhs)
 {
     // 计算最小编辑距离-包括处理中英文
@@ -189,4 +193,71 @@ int editDistance(const std::string &lhs, const std::string &rhs)
         }
     }
     return editDist[lhs_len][rhs_len];
+}
+
+//解析HTTP请求
+void HttpRequest::parseRequestLine(const std::string& line)
+{
+        std::istringstream stream(line);
+        stream >> method;  // 提取请求方法
+        stream >> url;     // 提取URL
+}
+
+void HttpRequest::addHeader(const string &headerLine)
+{
+    size_t pos = headerLine.find(':');
+    if (pos != string::npos)
+    {
+        string key = headerLine.substr(0, pos);
+        string value = headerLine.substr(pos + 1);
+        headers[key] = value;
+    }
+}
+
+void HttpRequest::setBody(const string &bodyContent)
+{
+    body = bodyContent;
+}
+
+HttpRequest parseHttpRequest(const std::string &msg)
+{
+    HttpRequest request;
+    std::istringstream ss(msg);
+    std::string line;
+
+    // 解析请求行 (第一行)
+    if (std::getline(ss, line))
+    {
+        request.parseRequestLine(line);
+    }
+
+    // 解析请求头
+    while (std::getline(ss, line) && line != "\r")
+    {
+        if (!line.empty())
+        {
+            request.addHeader(line);
+        }
+    }
+
+    // 判断是否有请求体
+    // auto it = request.headers.find("Content-Length");
+    // if (it != request.headers.end())
+    // {
+    //     int contentLength = std::stoi(it->second);
+    //     if (contentLength > 0)
+    //     {
+    //         // 读取请求体
+    //         std::string body;
+    //         char ch;
+    //         for (int i = 0; i < contentLength; ++i)
+    //         {
+    //             ss.get(ch);
+    //             body.push_back(ch);
+    //         }
+    //         request.setBody(body);  // 设置请求体
+    //     }
+    // }
+
+    return request;
 }
