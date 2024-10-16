@@ -54,11 +54,24 @@ void Tcp_server::onMessage(const Tcpconnection_ptr &con)
         HttpPackge pack("/home/lzc/SearchEg/data/search.html", con);
         // 将任务包发给子线程(con、msg)
         addTask(_pool, pack);
+        std::cout<<"请求方法"<<recv.method<<","<<"URL"<<recv.url<<"\n";
         std::cout << "返回一个网页" << "\n";
     }
-    else
+    else if(recv.method == "POST")
     {
-        std::cout<<"请求方法"<<recv.method<<","<<"URL"<<recv.url<<"\n";
+        //"/search?keyword=中文关键字"
+        string keyWord = parseUrl(recv.url);
+        SearchPackge pack(keyWord,_engine,con);
+        addTask(_pool, pack);
+        std::cout << "搜索任务" << "\n";
+    }
+    else if(recv.method == "PUT")
+    {
+        //"/search?keyword=中文关键字"
+        string keyWord = parseUrl(recv.url);
+        RecommendPackge pack(keyWord,_engine,con);
+        addTask(_pool, pack);
+        std::cout << "推荐任务" << "\n";
     }
     // 1、HTTP GET任务则打包成获取网页任务
     // 2、HTTP PUT任务则打包成搜索任务

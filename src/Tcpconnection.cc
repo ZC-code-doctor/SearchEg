@@ -20,8 +20,8 @@ Tcpconnection::~Tcpconnection()
 
 string Tcpconnection::recvMsg()
 {
-    char buff[1024]={0};
-    _sockIO.readLine(buff,1024);
+    char buff[4096]={0};
+    _sockIO.readHttpRequest(buff,4096);
     return buff;
 }
 

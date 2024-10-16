@@ -261,3 +261,52 @@ HttpRequest parseHttpRequest(const std::string &msg)
 
     return request;
 }
+
+// 函数用于解码 URL 中的百分号编码
+std::string urlDecode(const std::string& src) {
+    std::string decoded;
+    for (size_t i = 0; i < src.length(); ++i) {
+        if (src[i] == '%' && i + 2 < src.length() &&
+            std::isxdigit(src[i + 1]) && std::isxdigit(src[i + 2])) {
+            int value = std::stoi(src.substr(i + 1, 2), nullptr, 16);
+            decoded += static_cast<char>(value);
+            i += 2; // 跳过已处理的两个字符
+        } else {
+            decoded += src[i];
+        }
+    }
+    return decoded;
+}
+
+std::string parseUrl(const std::string& url) {
+    std::string result;
+
+    // 检查是否以 "/search" 开头
+    if (url.find("/search") == 0) {
+        // 获取关键字部分
+        std::string queryString = url.substr(url.find("?") + 1);
+
+        // 使用字符串流解析关键字
+        std::istringstream iss(queryString);
+        std::string token;
+        std::string keyword;
+
+        // 按照 '=' 分割，获取关键字
+        while (std::getline(iss, token, '=')) {
+            if (token == "keyword") {
+                std::getline(iss, keyword);
+                break;
+            }
+        }
+
+        // 解码关键字
+        keyword = urlDecode(keyword);
+
+        // 构造结果字符串
+        result = keyword;
+    } else {
+        result = "无效的指令";
+    }
+
+    return result;
+}

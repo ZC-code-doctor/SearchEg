@@ -44,7 +44,11 @@ struct HttpRequest {
     void parseRequestLine(const string& requestLine);
     void addHeader(const string& headerLine);
     void setBody(const string& bodyContent);
+    
 };
 //解析请求
 HttpRequest parseHttpRequest(const string& msg);
+//解析url指令
+string urlDecode(const std::string& src);
+string parseUrl(const std::string& url);
 #endif

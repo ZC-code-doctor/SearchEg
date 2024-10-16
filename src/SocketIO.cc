@@ -1,5 +1,7 @@
 #include "SocketIO.h"
 
+#include <string.h>
+
 
 SocketIO::SocketIO(int fd)
 :_fd(fd)
@@ -108,3 +110,32 @@ int SocketIO::readLine(char* buf,int len)
     }
     return total;
 }
+
+int SocketIO::readHttpRequest(char* buf, int len) {
+    int total = 0;
+    int left = len;
+    while (left > 0) {
+        int ret = recv(_fd, buf + total, left, 0);
+        if (ret == -1 && errno == EINTR) {
+            continue;
+        }
+        if (ret <= 0) {
+            break; // 连接关闭或出错
+        }
+        total += ret;  // 更新已读取的字节数
+        left -= ret;   // 更新剩余字节数
+
+        // 检查是否读取到请求结束标志
+        if (total >= 4 && strncmp(buf + total - 4, "\r\n\r\n", 4) == 0) {
+            break; // 找到请求结束
+        }
+    }
+    // 添加终止符
+    if (total < len) {
+        buf[total] = '\0';
+    } else {
+        buf[len - 1] = '\0'; // 防止溢出
+    }
+    return total; // 返回读取的总字节数
+}
+

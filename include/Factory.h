@@ -18,6 +18,8 @@ public:
     Task* productTask(Packge);
     Task* productTask(factor);
     Task* productTask(HttpPackge);
+    Task* productTask(SearchTask);
+    Task* productTask(RecommendTask);
 
 private:
 

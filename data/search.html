@@ -3,99 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Search</title>
+    <title>Search Page</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
             margin: 0;
             padding: 0;
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
-            background-color: #f8f9fa;
-        }
-
-        .logo {
-            margin-bottom: 30px;
-        }
-
-        .search-container {
-            width: 100%;
-            max-width: 600px;
-            display: flex;
             flex-direction: column;
+        }
+
+        #logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4285F4;
+            margin-bottom: 20px;
+        }
+
+        #search-container {
+            display: flex;
+            justify-content: center;
             align-items: center;
         }
 
-        input[type="text"] {
-            width: 100%;
-            max-width: 580px;
-            padding: 10px 20px;
-            font-size: 18px;
-            border: 1px solid #dfe1e5;
+        #search-box {
+            width: 400px;
+            padding: 12px;
             border-radius: 24px;
-            outline: none;
-            box-shadow: none;
-            transition: all 0.2s ease-in-out;
-        }
-
-        input[type="text"]:focus {
-            border-color: #4285f4;
-            box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        button {
-            background-color: #f8f9fa;
             border: 1px solid #dfe1e5;
-            color: #5f6368;
-            padding: 10px 20px;
-            font-size: 14px;
+            font-size: 16px;
+        }
+
+        #search-button {
+            padding: 10px 16px;
+            margin-left: 10px;
+            background-color: #4285F4;
+            border: none;
+            color: white;
+            font-size: 16px;
             border-radius: 4px;
             cursor: pointer;
-            margin: 0 10px;
-            transition: background-color 0.2s;
         }
 
-        button:hover {
-            background-color: #e8e9eb;
+        #search-button:hover {
+            background-color: #357ae8;
         }
 
-        .footer {
+        #footer {
             position: absolute;
-            bottom: 0;
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-            background-color: #f2f2f2;
-            font-size: 14px;
+            bottom: 20px;
+            font-size: 12px;
+            color: #70757a;
         }
     </style>
 </head>
 <body>
-    <div class="logo">
-        <img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png" alt="Google Logo" width="272" height="92">
+
+    <div id="logo">My Search</div>
+
+    <div id="search-container">
+        <input type="text" id="search-box" placeholder="Enter search term">
+        <button id="search-button">Search</button>
     </div>
 
-    <div class="search-container">
-        <form action="/search" method="GET">
-            <input type="text" name="q" placeholder="Search Google or type a URL" autocomplete="off">
-            <div class="button-container">
-                <button type="submit">Google Search</button>
-                <button type="button">I'm Feeling Lucky</button>
-            </div>
-        </form>
+    <div id="footer">
+        &copy; 2024 My Search | Privacy | Terms
     </div>
 
-    <div class="footer">
-        <p>Google Search Clone &copy; 2024</p>
-    </div>
+    <script>
+        document.getElementById("search-button").addEventListener("click", function() {
+            // 获取输入框中的查询内容
+            var query = document.getElementById("search-box").value;
+
+            if (query) {
+                // 使用 fetch 发送 POST 请求到服务器
+                fetch("http://192.168.88.128:8888/search", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "query=" + encodeURIComponent(query)
+                })
+                .then(response => response.text())
+                .then(data => {
+                    // 在页面上展示服务器返回的内容
+                    console.log("服务器返回的数据:", data);
+                    alert("服务器响应: " + data);
+                })
+                .catch(error => {
+                    console.error("请求失败:", error);
+                    alert("请求失败，请检查网络连接或服务器状态");
+                });
+            } else {
+                alert("Please enter a search term!");
+            }
+        });
+    </script>
+
 </body>
 </html>
