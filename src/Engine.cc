@@ -14,7 +14,13 @@ Engine_basic::~Engine_basic()
 }
 
 Engine::Engine(Configuration *pConf, shared_ptr<cppjieba::Jieba> jieba)
-    : _pConf(pConf), _jieba(jieba), _yuliaoTable(new vector<pair<string, int>>()), _indexTable(new map<string, set<int>>()), _offsetTable(new map<int, pair<int, int>>()), _invertIndexTable(new map<string, set<pair<int, double>>>())
+    : _pConf(pConf)
+    , _jieba(jieba)
+    , _yuliaoTable(new vector<pair<string, int>>())
+    , _indexTable(new map<string, set<int>>())
+    , _offsetTable(new map<int, pair<int, int>>())
+    , _invertIndexTable(new map<string, set<pair<int, double>>>())
+    , _cache(2)
 {
     // 预留一片内存空间
     // _offsetTable->reserve(10000);
@@ -23,6 +29,7 @@ Engine::Engine(Configuration *pConf, shared_ptr<cppjieba::Jieba> jieba)
 
     // 加载资源
     loadResoure();
+    _mtx;
 }
 Engine::~Engine()
 {
@@ -142,22 +149,22 @@ vector<string> Engine::recommendWord(const string &keyWord)
     vector<string> ch = spiltWord(keyWord);
     vector<string> recommend;
     set<int> dictSet;
-    for(auto&elem:ch)
+    for (auto &elem : ch)
     {
-        for(auto&num:(*_indexTable)[elem])
+        for (auto &num : (*_indexTable)[elem])
         {
             dictSet.insert(num);
         }
     }
 
-    for(auto&idx:dictSet)
+    for (auto &idx : dictSet)
     {
-        int distance=editDistance(keyWord,(*_yuliaoTable)[idx].first);
-        if(distance<=1)
+        int distance = editDistance(keyWord, (*_yuliaoTable)[idx].first);
+        if (distance <= 1)
         {
             recommend.push_back((*_yuliaoTable)[idx].first);
         }
-    }    
+    }
     return recommend;
 }
 
@@ -194,38 +201,49 @@ vector<string> Engine::spiltWord(const string &keyWord)
 vector<json> Engine::SearchPage(const string &keyWord)
 {
     vector<string> word;
-    _jieba->Cut(keyWord, word, true);
-
-    // 清洗字符串
-    vector<string> SearchWord = cleanKeyWord(word);
-    std::cout<<"关键词:";
-    for(auto&elem:SearchWord)
-    {
-        std::cout<<elem<<" ";
-    }
-    std::cout<<"\n";
-
-    // 计算TF-IDF值生成查询向量
-    std::vector<double> queryVector = KeyWord_TFIDF(SearchWord);
-
-    // 获取一个关键词重合度高于x的文件集合
-    map<int, vector<double>> fileVector = get_FileVecotr(SearchWord, queryVector.size(), 0.5);
-
-    // 计算集合之间的相似度
-    map<double, int> fileSimply = jaccardSimilarity(queryVector, fileVector);
-
-    // 获取文章内容集合
-    vector<pair<string,string>> matchFile = getFile(fileSimply);
-
-    //返回构建好的JSON对象
     vector<json> jsonPage;
-    for(auto&elem:matchFile)
+    //读取缓存时加锁
+    _mtx.lock();
+    bool isHit = _cache.readCache(keyWord, jsonPage);
+    _mtx.unlock();
+    if (isHit)
     {
+        std::cout<<"引擎缓存命中\n";
+        return jsonPage;
+    }
+    else
+    {
+        std::cout<<"引擎缓存未命中\n";
+        _jieba->Cut(keyWord, word, true);
+
+        // 清洗字符串
+        vector<string> SearchWord = cleanKeyWord(word);
+
+        // 计算TF-IDF值生成查询向量
+        std::vector<double> queryVector = KeyWord_TFIDF(SearchWord);
+
+        // 获取一个关键词重合度高于x的文件集合
+        map<int, vector<double>> fileVector = get_FileVecotr(SearchWord, queryVector.size(), 0.5);
+
+        // 计算集合之间的相似度
+        map<double, int> fileSimply = jaccardSimilarity(queryVector, fileVector);
+
+        // 获取文章内容集合
+        vector<pair<string, string>> matchFile = getFile(fileSimply);
+
+        // 返回构建好的JSON对象
+        for (auto &elem : matchFile)
+        {
             // 构造 JSON 对象
             json j;
             j["url"] = elem.first;
             j["title"] = elem.second;
             jsonPage.push_back(j);
+        }
+        //往缓存中插入数据
+        _mtx.lock();
+        _cache.addElement(keyWord,jsonPage);
+        _mtx.unlock();
     }
 
     return jsonPage;
@@ -314,12 +332,12 @@ vector<set<pair<int, double>>> Engine::getDocidSet(const vector<string> &keyWord
 }
 
 // 获取文章内容集合
-vector<pair<string,string>> Engine::getFile(const map<double, int> &fileSimply)
+vector<pair<string, string>> Engine::getFile(const map<double, int> &fileSimply)
 {
     auto it = fileSimply.rbegin();
     vector<pair<int, int>> offFile;
     vector<string> filePage;
-    vector<pair<string,string>> res;
+    vector<pair<string, string>> res;
     filePage.reserve(1000);
     // 创建一个文件打开对象
     string pagePath = _pConf->ConfigMap()["Ripepage"];
@@ -338,7 +356,7 @@ vector<pair<string,string>> Engine::getFile(const map<double, int> &fileSimply)
         ifs.read(&page[0], elem.second);
         filePage.push_back(page);
     }
-    
+
     for (auto &xml : filePage)
     {
         XMLDocument doc;
@@ -353,7 +371,7 @@ vector<pair<string,string>> Engine::getFile(const map<double, int> &fileSimply)
             const char *url = urlElement->GetText();
             const char *title = titleElement->GetText();
 
-            res.emplace_back(url,title);
+            res.emplace_back(url, title);
         }
     }
 

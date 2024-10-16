@@ -66,66 +66,66 @@ SearchTask::SearchTask(SearchPackge packge)
     : _packge(packge)
 {
 }
-void SearchTask::producess()
-{
-    // 先向Redis服务器发送一个keyWord
-
-    // 创建 Redis 对象，连接到 Redis 服务器
-    auto redis = Redis("tcp://127.0.0.1:6379");
-
-    // 获取 key 的值
-    auto val = redis.get(_packge._keyWord);
-    if (val)    
-    {
-        //如果key值存在则直接返回查询结果
-        // 子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
-        string mes = *val;
-        _packge._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _packge._conn.get(),mes));
-        cout << "redis 缓存返回" << endl;
-    }
-    else    
-    {
-        // 如果返回值为空，则调用引擎查询底层数据，并插入一个key-value
-
-        // 获取json集合
-        json jsonResponseArray = _packge._engine->SearchPage(_packge._keyWord);
-        // 将 JSON 数组序列化为字符串
-        std::string jsonResponse = jsonResponseArray.dump();
-        // 构建 HTTP 响应报文
-        std::string response;
-        response += "HTTP/1.1 200 OK\r\n";                                             // 状态行
-        response += "Content-Type: application/json\r\n";                              // 设置内容类型为 JSON
-        response += "Content-Length: " + std::to_string(jsonResponse.size()) + "\r\n"; // 设置内容长度
-        response += "Connection: keep-alive\r\n";                                      // 连接类型
-        response += "\r\n";                                                            // 空行，分隔头部和主体
-        response += jsonResponse;                                                      // 响应体
-
-        // 子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
-        _packge._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _packge._conn.get(), response));
-        //并向redis插入一个键，关键词对应的HTTP响应报文
-        redis.set(_packge._keyWord, response);
-        cout << "key does not exist" << endl;
-    }
-}
-
 // void SearchTask::producess()
 // {
-//     //获取json集合
-//     json jsonResponseArray = _packge._engine->SearchPage(_packge._keyWord);
-//     // 将 JSON 数组序列化为字符串
-//     std::string jsonResponse = jsonResponseArray.dump();
-//     // 构建 HTTP 响应报文
-//     std::string response;
-//     response += "HTTP/1.1 200 OK\r\n";  // 状态行
-//     response += "Content-Type: application/json\r\n";  // 设置内容类型为 JSON
-//     response += "Content-Length: " + std::to_string(jsonResponse.size()) + "\r\n";  // 设置内容长度
-//     response += "Connection: keep-alive\r\n";  // 连接类型
-//     response += "\r\n";  // 空行，分隔头部和主体
-//     response += jsonResponse;  // 响应体
+//     // 先向Redis服务器发送一个keyWord
 
-//     // 子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
-//     _packge._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _packge._conn.get(), response));
+//     // 创建 Redis 对象，连接到 Redis 服务器
+//     auto redis = Redis("tcp://127.0.0.1:6379");
+
+//     // 获取 key 的值
+//     auto val = redis.get(_packge._keyWord);
+//     if (val)    
+//     {
+//         //如果key值存在则直接返回查询结果
+//         // 子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
+//         string mes = *val;
+//         _packge._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _packge._conn.get(),mes));
+//         cout << "redis 缓存返回" << endl;
+//     }
+//     else    
+//     {
+//         // 如果返回值为空，则调用引擎查询底层数据，并插入一个key-value
+
+//         // 获取json集合
+//         json jsonResponseArray = _packge._engine->SearchPage(_packge._keyWord);
+//         // 将 JSON 数组序列化为字符串
+//         std::string jsonResponse = jsonResponseArray.dump();
+//         // 构建 HTTP 响应报文
+//         std::string response;
+//         response += "HTTP/1.1 200 OK\r\n";                                             // 状态行
+//         response += "Content-Type: application/json\r\n";                              // 设置内容类型为 JSON
+//         response += "Content-Length: " + std::to_string(jsonResponse.size()) + "\r\n"; // 设置内容长度
+//         response += "Connection: keep-alive\r\n";                                      // 连接类型
+//         response += "\r\n";                                                            // 空行，分隔头部和主体
+//         response += jsonResponse;                                                      // 响应体
+
+//         // 子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
+//         _packge._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _packge._conn.get(), response));
+//         //并向redis插入一个键，关键词对应的HTTP响应报文
+//         redis.set(_packge._keyWord, response);
+//         cout << "key does not exist" << endl;
+//     }
 // }
+
+void SearchTask::producess()
+{
+    //获取json集合
+    json jsonResponseArray = _packge._engine->SearchPage(_packge._keyWord);
+    // 将 JSON 数组序列化为字符串
+    std::string jsonResponse = jsonResponseArray.dump();
+    // 构建 HTTP 响应报文
+    std::string response;
+    response += "HTTP/1.1 200 OK\r\n";  // 状态行
+    response += "Content-Type: application/json\r\n";  // 设置内容类型为 JSON
+    response += "Content-Length: " + std::to_string(jsonResponse.size()) + "\r\n";  // 设置内容长度
+    response += "Connection: keep-alive\r\n";  // 连接类型
+    response += "\r\n";  // 空行，分隔头部和主体
+    response += jsonResponse;  // 响应体
+
+    //子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
+    _packge._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _packge._conn.get(), response));
+}
 
 // 推荐关键词任务
 RecommendPackge::RecommendPackge(string keyWord, Engine_basic *engine, Tcpconnection_ptr con)

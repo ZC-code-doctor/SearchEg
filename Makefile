@@ -23,9 +23,10 @@ server:bin/Acceptor.o bin/AcceptServer.o bin/Factory.o bin/InetAdderess.o \
 	   bin/IOserver.o bin/Socket.o bin/SocketIO.o bin/Task.o bin/TaskQueue.o \
 	   bin/Tcpconnection.o bin/Tcp_server.o bin/ThreadPool.o \
 	   bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/tinyxml2.o \
+	   bin/LRUcache.o \
 	   bin/server.o
 	g++ $^ -o server $(LDFLAGS)
 
 #单独引擎测试
-Engine:bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/tinyxml2.o bin/test.o
+Engine:bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/tinyxml2.o bin/LRUcache.o bin/test.o
 	g++ $^ -o Engine $(LDFLAGS)

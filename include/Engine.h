@@ -4,7 +4,7 @@
 #include "Configuration.h"
 #include "WebPage.h"
 #include "Tools.h"
-#include "nlohmann/json.hpp"
+#include "LRUcache.h"
 
 
 #include <memory>
@@ -13,8 +13,10 @@
 #include <string>
 #include <set>
 #include <cppjieba/Jieba.hpp>
+#include <mutex>
 
-using json = nlohmann::json;
+
+using std::mutex;
 using std::shared_ptr;
 using std::map;
 using std::map;
@@ -64,18 +66,24 @@ private:
     map<int,vector<double>> get_FileVecotr(const vector<string>& SearchWord,int ,double threshold);
     vector<pair<string,string>> getFile(const map<double,int>&);
     vector<string> cleanKeyWord(vector<string>& );
+    //引擎缓存相关
 
 
 
 private:
     Configuration* _pConf;
     shared_ptr<cppjieba::Jieba> _jieba;
-
+    //词库表
     vector<pair<string,int>>* _yuliaoTable;
     map<string,set<int>>* _indexTable;
-
+    //网页表
     map<int,pair<int,int>>* _offsetTable;
     map<string,set<pair<int,double>>>* _invertIndexTable;
+    //引擎缓存
+    LRUcache _cache;
+    CacheManager _cacheManager;
+    //缓存锁，进行缓存操作时进行加锁
+    std::mutex _mtx;
 };
 
 
