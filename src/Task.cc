@@ -6,48 +6,11 @@ using std::ifstream;
 
 Task::~Task() {}
 
-TaskA::TaskA(string str)
-    : name(str) {}
-
-void TaskA::producess()
-{
-    cout << "This is a TaksA:" << name << endl;
-}
-TaskA::~TaskA() {}
-
-void TaskB::producess()
-{
-    cout << "This is a TaksB:" << number << endl;
-}
-
-TaskB::TaskB(int num)
-    : number(num) {}
-
-TaskB::~TaskB() {}
-
-Packge::Packge(string &msg, Tcpconnection_ptr con)
-    : _msg(msg), _conn(con)
-{
-}
-
-TaskC::TaskC(Packge &pack)
-    : _pack(pack)
-{
-}
-
-void TaskC::producess()
-{
-    // 子线程处理业务
-    _pack._msg = "This is TaskC handle:" + _pack._msg;
-    // 子线程处理完业务，往EventLoop中的vector<factor>中添加一个数据
-    _pack._conn->addEventPending(std::bind(&Tcpconnection::sendMsg, _pack._conn.get(), _pack._msg));
-}
-
-TaskD::TaskD(factor &&cb)
+SendTask::SendTask(factor &&cb)
     : _cb(std::move(cb))
 {
 }
-void TaskD::producess()
+void SendTask::producess()
 {
     // 通过IO服务器对象维护的线程池进行数据的发送
     _cb();

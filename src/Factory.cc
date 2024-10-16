@@ -1,29 +1,11 @@
 #include "Factory.h"
 
-Task* Factory::productTask(string val)
-{
-    Task* pA= new TaskA(val);
-    return pA;
-}
-
-Task* Factory::productTask(int val)
-{
-    Task* pB= new TaskB(val);
-    return pB;
-}
-
-Task* Factory::productTask(Packge pack)
-{
-    Task* pC= new TaskC(pack);
-    return pC;
-}
-
 
 //本项目任务类型
 Task* Factory::productTask(factor fc)
 {
-    Task* pD= new TaskD(std::move(fc));
-    return pD;
+    Task* pSend= new SendTask(std::move(fc));
+    return pSend;
 }
 
 Task* Factory::productTask(HttpPackge pack)

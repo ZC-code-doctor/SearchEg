@@ -8,14 +8,10 @@
 using std::string;
 
 
-class Task;
 
 class Factory
 {
 public:
-    Task* productTask(int);
-    Task* productTask(string);
-    Task* productTask(Packge);
     Task* productTask(factor);
     Task* productTask(HttpPackge);
     Task* productTask(SearchTask);

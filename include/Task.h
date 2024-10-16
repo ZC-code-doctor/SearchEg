@@ -15,50 +15,12 @@ public:
     virtual ~Task()=0;
 };
 
-class TaskA
+
+class SendTask
 :public Task
 {
 public:
-    TaskA(string);
-    void producess();
-    ~TaskA();
-private:
-    string name;
-};
-
-class TaskB
-:public Task
-{
-public:
-    void producess();
-    TaskB(int num);
-    ~TaskB();
-private:
-    int number;
-};
-
-struct Packge
-{
-    Packge(string& msg, Tcpconnection_ptr con);
-    string _msg;
-    Tcpconnection_ptr _conn;  
-};
-
-class TaskC
-:public Task
-{
-public:
-    TaskC(Packge& pack);
-    void producess();
-private:
-   Packge _pack;
-};
-
-class TaskD
-:public Task
-{
-public:
-    TaskD(factor&& cb);
+    SendTask(factor&& cb);
     void producess();
 private:
    factor _cb; 

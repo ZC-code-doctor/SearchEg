@@ -19,8 +19,8 @@ int main()
    shared_ptr<cppjieba::Jieba> jieba(new cppjieba::Jieba(DICT_PATH, HMM_PATH, USER_DICT_PATH, IDF_PATH, STOP_WORD_PATH));
    Configuration *pConf = Configuration::getInstance("/home/lzc/SearchEg/conf/Myconf.conf");
 
-   Engine rec(pConf, jieba);
-   Tcp_server server("192.168.88.128", 8888, &rec);
-
+   shared_ptr<Engine> rec(new Engine(pConf, jieba)) ;
+   Tcp_server server("192.168.88.128", 8888, rec.get());
+   
    server.Start();
 }
