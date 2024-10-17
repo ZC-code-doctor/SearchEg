@@ -32,15 +32,26 @@ public:
     ~LRUcache();
     void addElement(const string &key,vector<json> value);
     bool readCache(const string& keyWords , vector<json>& );
-    void updata(const LRUcache& rhs);
+
+
+    //缓存处理相关
     void Clear();
+    void updataExange(const LRUcache &rhs);
+    void updata();
     list<pair<string,vector<json>>> & getPendingUpdateList();
 
 private:
     size_t _capacity;
     list<pair<string,vector<json>>> _pendingUpdateList;
+
+    //下列四个都是堆上的内存
+    //对外交互缓存
     unordered_map<string, list<vector<json>>::iterator>* _hashMap;
     list<vector<json>>* _resultsList;
+    //与共享内存交互缓存
+    unordered_map<string, list<vector<json>>::iterator>* _exchangeHashMap;
+    list<vector<json>>* _exchangeList;
+    
 };
 
 
