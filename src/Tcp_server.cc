@@ -39,7 +39,7 @@ void Tcp_server::Start()
     // 主线程的定时任务
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::seconds(5));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
 
         // 执行定时任务的代码
         std::cout << "定时任务执行" << std::endl;

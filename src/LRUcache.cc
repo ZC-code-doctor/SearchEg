@@ -2,7 +2,9 @@
 #include <iostream>
 #include <mutex>
 
-std::mutex cacheMutex; // 定义一个互斥锁
+// 定义一个静态的全局互斥锁，对其它文件屏蔽
+//仅在LRU缓存处理时可以使用
+static std::mutex cacheMutex; 
 
 LRUcache::LRUcache(int capacity)
     : _capacity(capacity)
@@ -180,7 +182,7 @@ void LRUcache::updataExange(const LRUcache &rhs)
 void LRUcache::updata()
 {
     // 这里需要加锁
-    std::lock_guard<std::mutex> lock(cacheMutex); // 加锁保护共享资源
+    std::lock_guard<std::mutex> lock(cacheMutex); 
     std::swap(_resultsList, _exchangeList);
     std::swap(_hashMap, _exchangeHashMap);
 }
@@ -245,6 +247,7 @@ void CacheManager::periodicUpdateCaches()
 // 获取线程对应的缓存，V4版本这个操作不需要加锁
 LRUcache *CacheManager::getCache(std::thread::id threadId)
 {
+    std::lock_guard<std::mutex> lock(cacheMutex);
     // 检查 map 中是否有对应线程 ID 的缓存
     if (_cacheList.find(threadId) == _cacheList.end())
     {
@@ -330,11 +333,11 @@ void CacheManager::periodicUpdateCaches()
 
         if (elem.second != _cache)
         {
+
             for (auto &value : elem.second->getPendingUpdateList())
             {
                 // 添加到主线程缓存
                 _cache->addElement(value.first, value.second);
-                //std::cout << "主缓存获取到的数据<<" << value.first << "\n";
             }
         }
     }
