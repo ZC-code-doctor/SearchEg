@@ -34,7 +34,6 @@ private:
 
     //辅助函数
     bool CompareTexts(const std::string& text1, uint64_t& fileHash ,const Simhasher& simhasher);
-
     // 切割文章
     vector<string> split(const string& text);
 private:

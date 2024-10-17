@@ -29,7 +29,6 @@ Engine::Engine(Configuration *pConf, shared_ptr<cppjieba::Jieba> jieba)
 
     // 加载资源
     loadResoure();
-    _mtx;
 
     // 初始化主线的共享内存
     std::thread::id this_id = std::this_thread::get_id();
@@ -161,7 +160,6 @@ vector<string> Engine::recommendWord(const string &keyWord)
             dictSet.insert(num);
         }
     }
-
     for (auto &idx : dictSet)
     {
         int distance = editDistance(keyWord, (*_yuliaoTable)[idx].first);
@@ -207,12 +205,10 @@ vector<json> Engine::SearchPage(const string &keyWord)
 {
     vector<string> word;
     vector<json> jsonPage;
-
     //通过线程id来锁定唯一的缓存地址
     std::thread::id this_id = std::this_thread::get_id();
     std::cout << "Current thread ID: " << this_id << std::endl;
     LRUcache& _cache = (*_cacheManager.getCache(this_id));
-    //读取缓存时加锁
     bool isHit = _cache.readCache(keyWord, jsonPage);
     if (isHit)
     {

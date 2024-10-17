@@ -51,7 +51,6 @@ public:
 
     //加载资源
     virtual void loadResoure()override;
-    
     //推荐候选词
     virtual vector<string> recommendWord(const string&)override;
     //匹配网页
@@ -69,10 +68,6 @@ private:
     vector<pair<string,string>> getFile(const map<double,int>&);
     vector<string> cleanKeyWord(vector<string>& );
 
-    
-
-
-
 private:
     Configuration* _pConf;
     shared_ptr<cppjieba::Jieba> _jieba;
@@ -84,8 +79,6 @@ private:
     map<string,set<pair<int,double>>>* _invertIndexTable;
     //引擎缓存
     CacheManager _cacheManager;
-    //缓存锁，进行缓存操作时进行加锁
-    std::mutex _mtx;
 };
 
 

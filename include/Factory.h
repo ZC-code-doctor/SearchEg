@@ -16,9 +16,7 @@ public:
     Task* productTask(HttpPackge);
     Task* productTask(SearchTask);
     Task* productTask(RecommendTask);
-
 private:
-
 };
 
 

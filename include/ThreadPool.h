@@ -22,7 +22,6 @@ public:
 
 template <class T>
 friend void addTask(ThreadPool& pool,T val);
-
     void Start();
     void Stop();
 

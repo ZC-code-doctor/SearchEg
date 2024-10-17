@@ -25,8 +25,6 @@ public:
 private:
    factor _cb; 
 };
-
-
 //本项目的任务类型
 struct HttpPackge
 {

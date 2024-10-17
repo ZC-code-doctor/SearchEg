@@ -144,13 +144,11 @@ void PageLibPreprocessor::initInverLib()
     //预留10000字节的空间
     vector<vector<string>> documents;
     documents.reserve(10000);
-
     for(auto&webPage:_pageLib)
     {
         vector<string> TF_Word = split(webPage.content());
         documents.push_back(TF_Word);
     }
-
     map<string, double> idf = computeIDF(documents);
     // 对每个文档计算 TF-IDF
     for (int i = 0; i < documents.size(); ++i) {
@@ -160,5 +158,4 @@ void PageLibPreprocessor::initInverLib()
             _invertIndexTable[word].insert(pair<int,double>(i+1,value));
         }
     }
-
 }
