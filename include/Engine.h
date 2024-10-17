@@ -56,6 +56,8 @@ public:
     virtual vector<string> recommendWord(const string&)override;
     //匹配网页
     virtual vector<json> SearchPage(const string&)override;
+    //引擎缓存相关,更新引擎缓存
+    void updatCache();
 private:
     //分割字符串类
     size_t getByteNum_UTF8(const char byte);
@@ -66,7 +68,8 @@ private:
     map<int,vector<double>> get_FileVecotr(const vector<string>& SearchWord,int ,double threshold);
     vector<pair<string,string>> getFile(const map<double,int>&);
     vector<string> cleanKeyWord(vector<string>& );
-    //引擎缓存相关
+
+    
 
 
 

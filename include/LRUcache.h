@@ -9,9 +9,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <sys/syscall.h>
-#include <thread>  // for std::this_thread::get_id
+#include <thread>  
+#include <mutex>
 
 #include "nlohmann/json.hpp"
+
 
 using json = nlohmann::json;
 using std::map;
@@ -19,6 +21,7 @@ using std::vector;
 using std::unordered_map;
 using std::list;
 using std::string;
+using std::pair;
 
 
 class LRUcache
@@ -30,11 +33,12 @@ public:
     void addElement(const string &key,vector<json> value);
     bool readCache(const string& keyWords , vector<json>& );
     void updata(const LRUcache& rhs);
-    list<vector<json>> & getPendingUpdateList();
+    void Clear();
+    list<pair<string,vector<json>>> & getPendingUpdateList();
 
 private:
-    int _capacity;
-    list<vector<json>> _pendingUpdateList;
+    size_t _capacity;
+    list<pair<string,vector<json>>> _pendingUpdateList;
     unordered_map<string, list<vector<json>>::iterator>* _hashMap;
     list<vector<json>>* _resultsList;
 };
@@ -43,11 +47,13 @@ private:
 class CacheManager
 {
 public:
+    ~CacheManager();
     LRUcache* getCache(std::thread::id idx);
     void periodicUpdateCaches();
 private:
     //线程id对应一个LRU实例,存放堆上的指针
     map<std::thread::id,LRUcache*> _cacheList;
+    std::mutex cacheMutex; // 定义一个互斥锁
 };
 
 

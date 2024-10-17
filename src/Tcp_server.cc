@@ -1,31 +1,58 @@
 #include "Tcp_server.h"
 #include "Tools.h"
 
-Tcp_server::Tcp_server(const string &ip, unsigned short port, Engine_basic *engine)
+Tcp_server::Tcp_server(const string &ip, unsigned short port, Engine *engine)
     : _acceptor(ip, port), _ioserver(), _acceptserver(_acceptor, _ioserver), _pool(3), _engine(engine)
 {
-    // vector<string> res = _engine->recommendWord("你");
-    // std::cout<<"候选词：";
-    // for(auto&elem:res)
-    // {
-    //     std::cout<<elem<<",";
-    // }
-    // std::cout<<"\n";
 }
 
 Tcp_server::~Tcp_server()
 {
 }
+/*
 void Tcp_server::Start()
 {
     _acceptor.ready();
     _pool.Start();
 
     setFunction();
+
     std::thread th1(std::bind(&IOserver::loop, &_ioserver));
     _acceptserver.Start();
     th1.join();
 }
+*/
+
+void Tcp_server::Start()
+{
+    _acceptor.ready();
+    _pool.Start();
+
+    setFunction();
+
+    // 启动 IOserver 的事件循环线程
+    std::thread ioThread(std::bind(&IOserver::loop, &_ioserver));
+
+    // 启动 AcceptServer 的处理线程，防止主线程被阻塞
+    std::thread acceptThread(&AcceptServer::Start, &_acceptserver);
+
+    // 主线程的定时任务
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+
+        // 执行定时任务的代码
+        std::cout << "定时任务执行" << std::endl;
+        //定时更新缓存
+        _engine->updatCache();
+
+    }
+
+    // 等待子线程完成
+    ioThread.join();
+    acceptThread.join();
+}
+
 void Tcp_server::Stop()
 {
     _acceptserver.Stop();
@@ -58,22 +85,22 @@ void Tcp_server::onMessage(const Tcpconnection_ptr &con)
         HttpPackge pack("/home/lzc/SearchEg/data/search.html", con);
         // 将任务包发给子线程(con、msg)
         addTask(_pool, pack);
-        std::cout<<"请求方法"<<recv.method<<","<<"URL"<<recv.url<<"\n";
+        std::cout << "请求方法" << recv.method << "," << "URL" << recv.url << "\n";
         std::cout << "返回一个网页" << "\n";
     }
-    else if(recv.method == "POST")
+    else if (recv.method == "POST")
     {
         //"/search?keyword=中文关键字"
         string keyWord = parseUrl(recv.url);
-        SearchPackge pack(keyWord,_engine,con);
+        SearchPackge pack(keyWord, _engine, con);
         addTask(_pool, pack);
         std::cout << "搜索任务" << "\n";
     }
-    else if(recv.method == "PUT")
+    else if (recv.method == "PUT")
     {
         //"/search?keyword=中文关键字"
         string keyWord = parseUrl(recv.url);
-        RecommendPackge pack(keyWord,_engine,con);
+        RecommendPackge pack(keyWord, _engine, con);
         addTask(_pool, pack);
         std::cout << "推荐任务" << "\n";
     }

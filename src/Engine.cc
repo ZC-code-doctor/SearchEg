@@ -30,6 +30,11 @@ Engine::Engine(Configuration *pConf, shared_ptr<cppjieba::Jieba> jieba)
     // 加载资源
     loadResoure();
     _mtx;
+
+    // 初始化主线的共享内存
+    std::thread::id this_id = std::this_thread::get_id();
+    std::cout<<"初始化主线程的id"<<this_id<<"\n";
+    _cacheManager.getCache(this_id);
 }
 Engine::~Engine()
 {
@@ -202,10 +207,11 @@ vector<json> Engine::SearchPage(const string &keyWord)
 {
     vector<string> word;
     vector<json> jsonPage;
+
+    //通过线程id来锁定唯一的缓存地址
     std::thread::id this_id = std::this_thread::get_id();
     std::cout << "Current thread ID: " << this_id << std::endl;
     LRUcache& _cache = (*_cacheManager.getCache(this_id));
-    sleep(10);
     //读取缓存时加锁
     bool isHit = _cache.readCache(keyWord, jsonPage);
     if (isHit)
@@ -376,6 +382,12 @@ vector<pair<string, string>> Engine::getFile(const map<double, int> &fileSimply)
 
     ifs.close();
     return res;
+}
+
+//更新引擎缓存
+void Engine::updatCache()
+{
+    _cacheManager.periodicUpdateCaches();
 }
 
 size_t Engine::getByteNum_UTF8(const char byte)

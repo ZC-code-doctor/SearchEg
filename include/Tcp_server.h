@@ -14,7 +14,7 @@ using std::bind;
 class Tcp_server
 {
 public:
-    Tcp_server(const string& ip, unsigned short port,Engine_basic* engine);
+    Tcp_server(const string& ip, unsigned short port,Engine* engine);
     ~Tcp_server();
     void Start();
     void Stop();
@@ -30,7 +30,7 @@ private:
     IOserver _ioserver;
     AcceptServer _acceptserver;
     ThreadPool _pool;
-    Engine_basic* _engine;
+    Engine* _engine;
 
 };
 

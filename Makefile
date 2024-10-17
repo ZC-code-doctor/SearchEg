@@ -2,7 +2,7 @@ INCLUDES = -I include
 CXXFLAGS = -c -g $(INCLUDES)
 LDFLAGS = -lm -pthread -lredis++ -lhiredis
 
-all: server
+all: serverV3
 
 # 通用规则: 将生成的 .o 文件放到 bin/ 目录
 bin/%.o: src/%.cc
@@ -19,13 +19,13 @@ LoadResource: bin/LoadResource.o bin/PageLibPreprocessor.o bin/WebPage.o \
 	g++ $^ -o LoadResource $(LDFLAGS)
 
 #服务器
-server:bin/Acceptor.o bin/AcceptServer.o bin/Factory.o bin/InetAdderess.o \
+serverV3:bin/Acceptor.o bin/AcceptServer.o bin/Factory.o bin/InetAdderess.o \
 	   bin/IOserver.o bin/Socket.o bin/SocketIO.o bin/Task.o bin/TaskQueue.o \
 	   bin/Tcpconnection.o bin/Tcp_server.o bin/ThreadPool.o \
 	   bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/tinyxml2.o \
 	   bin/LRUcache.o \
 	   bin/server.o
-	g++ $^ -o server $(LDFLAGS)
+	g++ $^ -o serverV3 $(LDFLAGS)
 
 #单独引擎测试
 Engine:bin/Engine.o bin/Configuration.o bin/WebPage.o bin/Tools.o bin/tinyxml2.o bin/LRUcache.o bin/test.o
